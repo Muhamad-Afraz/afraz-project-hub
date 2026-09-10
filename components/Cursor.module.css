@@ -1,0 +1,116 @@
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1000;
+  mix-blend-mode: difference;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-white);
+  border-radius: 50%;
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  transition: transform var(--duration-fast) var(--ease-out),
+              opacity var(--duration-fast) var(--ease-out);
+}
+
+.ring {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 50%;
+  position: absolute;
+  top: -18px;
+  left: -18px;
+  transition: width var(--duration-normal) var(--ease-out),
+              height var(--duration-normal) var(--ease-out),
+              top var(--duration-normal) var(--ease-out),
+              left var(--duration-normal) var(--ease-out),
+              border-color var(--duration-normal) var(--ease-out),
+              background var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+.label {
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-white);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+  pointer-events: none;
+}
+
+.hidden .dot,
+.hidden .ring {
+  opacity: 0;
+  transform: scale(0);
+}
+
+.hover .ring {
+  width: 56px;
+  height: 56px;
+  top: -28px;
+  left: -28px;
+  border-color: var(--theme-accent);
+}
+
+.project .ring {
+  width: 80px;
+  height: 80px;
+  top: -40px;
+  left: -40px;
+  border-color: var(--theme-accent);
+  background: rgba(124, 58, 237, 0.08);
+}
+
+.project .label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.close .ring {
+  width: 48px;
+  height: 48px;
+  top: -24px;
+  left: -24px;
+  border-color: var(--color-white);
+}
+
+.nav .ring {
+  width: 48px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  top: -10px;
+  left: -24px;
+  border-color: var(--theme-accent);
+  background: var(--color-accent-subtle);
+}
+
+.text .dot {
+  transform: scale(0);
+}
+
+.text .ring {
+  width: 4px;
+  height: 32px;
+  border-radius: 2px;
+  top: -16px;
+  left: -2px;
+  border-color: var(--theme-accent);
+}
+
+@media (hover: none) {
+  .cursor { display: none; }
+}

@@ -1,0 +1,122 @@
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--nav-height);
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(10, 10, 11, 0.6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 var(--page-padding);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-wider);
+  cursor: none;
+  transition: color var(--duration-normal) var(--ease-out);
+}
+
+.logo:hover {
+  color: var(--theme-accent);
+}
+
+.logoDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--theme-accent);
+  transition: background var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+
+.logo:hover .logoDot {
+  transform: scale(1.5);
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xl);
+}
+
+.links .nav-link,
+.links button {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-text-muted);
+  cursor: none;
+  position: relative;
+  padding: var(--space-sm) 0;
+  transition: color var(--duration-normal) var(--ease-out);
+}
+
+.links .nav-link::after,
+.links button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--theme-accent);
+  transition: width var(--duration-normal) var(--ease-out);
+}
+
+.links .nav-link:hover,
+.links .nav-link.active,
+.links button:hover,
+.links button.active {
+  color: var(--color-text);
+}
+
+.links .nav-link.active::after,
+.links .nav-link:hover::after,
+.links button.active::after,
+.links button:hover::after {
+  width: 100%;
+}
+
+.counter {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.counter .nav-counter-current {
+  color: var(--color-text);
+}
+
+.counter .nav-counter-sep {
+  color: var(--color-text-dim);
+  margin: 0 2px;
+}
+
+@media (max-width: 768px) {
+  .counter {
+    display: none;
+  }
+  .links {
+    gap: var(--space-xl);
+  }
+}
