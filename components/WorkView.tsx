@@ -1,10 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useMemo } from 'react'
 import { gsap } from 'gsap'
 import { prefersReducedMotion } from '@/lib/utils'
-import { Project, ViewName } from '@/lib/types'
+import { useReveals } from '@/lib/useReveals'
+import { Project } from '@/lib/types'
 import ProjectCard from './ProjectCard'
+import SiteFooter from './SiteFooter'
 import styles from '@/components/WorkView.module.css'
 
 interface Props {
@@ -14,9 +16,8 @@ interface Props {
   activeFilter: string
   setActiveFilter: (f: string) => void
   setVisibleCount: (n: number) => void
+  visibleCount: number
 }
-
-const FILTERS = ['all', 'web', 'experiments', 'client', 'concepts']
 
 export default function WorkView({
   active,
@@ -25,8 +26,40 @@ export default function WorkView({
   activeFilter,
   setActiveFilter,
   setVisibleCount,
+  visibleCount,
 }: Props) {
+  const viewRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
+  const filtersRef = useRef<HTMLDivElement>(null)
+  const indicatorRef = useRef<HTMLDivElement>(null)
+
+  const FILTERS = useMemo(
+    () => [
+      'all',
+      ...Array.from(new Set(projects.map((p) => p.category))),
+    ],
+    [projects]
+  )
+
+  useReveals(active, viewRef)
+
+  const moveIndicator = useCallback(() => {
+    if (!filtersRef.current || !indicatorRef.current) return
+    const activeEl = filtersRef.current.querySelector('.filter-btn.active')
+    if (!activeEl) return
+    const fr = filtersRef.current.getBoundingClientRect()
+    const ar = activeEl.getBoundingClientRect()
+    gsap.to(indicatorRef.current, {
+      left: ar.left - fr.left,
+      width: ar.width,
+      duration: prefersReducedMotion() ? 0 : 0.5,
+      ease: 'power3.out',
+    })
+  }, [])
+
+  useEffect(() => {
+    moveIndicator()
+  }, [active, activeFilter, moveIndicator])
 
   useEffect(() => {
     if (!active || !gridRef.current) return
@@ -44,12 +77,13 @@ export default function WorkView({
       ;(card as HTMLElement).classList.remove('visible')
       gsap.fromTo(
         card,
-        { opacity: 0, y: 40 },
+        { opacity: 0, y: 44, scale: 0.985 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.6,
-          delay: i * 0.1,
+          scale: 1,
+          duration: 0.7,
+          delay: 0.15 + i * 0.09,
           ease: 'power2.out',
           onComplete: () => (card as HTMLElement).classList.add('visible'),
         }
@@ -88,8 +122,8 @@ export default function WorkView({
         } else {
           gsap.to(card, {
             opacity: 0,
-            scale: 0.95,
-            y: 10,
+            scale: 0.96,
+            y: 12,
             duration: 0.3,
             ease: 'power2.in',
             onComplete: () => {
@@ -100,31 +134,55 @@ export default function WorkView({
         }
       })
 
+      requestAnimationFrame(moveIndicator)
       setVisibleCount(visibleIndex)
     },
-    [activeFilter, projects, setActiveFilter, setVisibleCount]
+    [activeFilter, projects, setActiveFilter, setVisibleCount, moveIndicator]
   )
 
   return (
     <div
+      ref={viewRef}
       className={`view ${active ? 'active' : ''} ${styles.work}`}
       data-view="work"
     >
       <div className={styles.header}>
         <div className={styles.headerTop}>
-          <h2 className="section-title" data-reveal>Selected Work</h2>
-          <div className={styles.filters}>
-            {FILTERS.map((f) => (
-              <button
-                key={f}
-                className={`filter-btn ${activeFilter === f ? 'active' : ''}`}
-                onClick={() => handleFilter(f)}
-                data-filter={f}
-                data-cursor="hover"
-              >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
-              </button>
-            ))}
+          <div className={styles.headingWrap}>
+            <h2 className={`section-title ${styles.sectionTitle}`} data-reveal>
+              The Archive
+            </h2>
+            <p className={styles.headingSub} data-reveal>
+              Selected digital constructions, experiments, and clients — each
+              one morphs this environment when you approach.
+            </p>
+          </div>
+
+          <div className={styles.filterGroup}>
+            <div ref={filtersRef} className={styles.filters}>
+              <span ref={indicatorRef} className={styles.indicator} />
+              {FILTERS.map((f) => (
+                <button
+                  key={f}
+                  className={`filter-btn ${activeFilter === f ? 'active' : ''}`}
+                  onClick={() => handleFilter(f)}
+                  data-filter={f}
+                  data-cursor="hover"
+                >
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                </button>
+              ))}
+            </div>
+            <div className={styles.indexReadout}>
+              <span className={styles.indexCur}>
+                {String(visibleCount).padStart(2, '0')}
+              </span>
+              <span className={styles.indexSep}>/</span>
+              <span className={styles.indexTot}>
+                {String(projects.length).padStart(2, '0')}
+              </span>
+              <span className={styles.indexWord}>PROJECTS</span>
+            </div>
           </div>
         </div>
         <div className={styles.headerLine} />
@@ -139,6 +197,7 @@ export default function WorkView({
           />
         ))}
       </div>
+      <SiteFooter />
     </div>
   )
 }

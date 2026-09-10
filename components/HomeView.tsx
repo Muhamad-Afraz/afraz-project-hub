@@ -3,7 +3,10 @@
 import { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { prefersReducedMotion, elementCenter } from '@/lib/utils'
+import { useReveals } from '@/lib/useReveals'
 import { ViewName } from '@/lib/types'
+import { PROJECTS } from '@/lib/projects'
+import { useThemeSystem } from '@/lib/useThemeSystem'
 import styles from '@/components/HomeView.module.css'
 
 interface Props {
@@ -14,32 +17,9 @@ interface Props {
 
 export default function HomeView({ active, navigateTo, projectCount }: Props) {
   const viewRef = useRef<HTMLDivElement>(null)
+  const theme = useThemeSystem()
 
-  useEffect(() => {
-    if (!active || !viewRef.current) return
-
-    const els = viewRef.current.querySelectorAll('[data-reveal]')
-    if (prefersReducedMotion()) {
-      els.forEach((el) => {
-        ;(el as HTMLElement).style.opacity = '1'
-        ;(el as HTMLElement).style.transform = 'none'
-      })
-      return
-    }
-
-    gsap.fromTo(
-      els,
-      { opacity: 0, y: 30 },
-      {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        stagger: 0.12,
-        delay: 0.3,
-        ease: 'power2.out',
-      }
-    )
-  }, [active])
+  useReveals(active, viewRef)
 
   useEffect(() => {
     const btn = viewRef.current?.querySelector('.btn-explore') as HTMLElement
@@ -52,7 +32,12 @@ export default function HomeView({ active, navigateTo, projectCount }: Props) {
       const dist = Math.sqrt(dx * dx + dy * dy)
       if (dist < 100) {
         const power = (1 - dist / 100) * 0.2
-        gsap.to(btn, { x: dx * power, y: dy * power, duration: 0.3, ease: 'power2.out' })
+        gsap.to(btn, {
+          x: dx * power,
+          y: dy * power,
+          duration: 0.3,
+          ease: 'power2.out',
+        })
       }
     })
     btn.addEventListener('mouseleave', () => {
@@ -67,39 +52,101 @@ export default function HomeView({ active, navigateTo, projectCount }: Props) {
       data-view="home"
     >
       <div className={styles.content}>
-        <div className={styles.hero}>
+        <section className={styles.hero}>
           <div className={styles.eyebrow} data-reveal>
-            <span className={styles.line} />
-            <span className={styles.tag}>Web Developer &amp; Designer</span>
+            <span className={styles.dot} />
+            <span className={styles.eyebrowText}>Afraz — Project Archive</span>
+            <span className={styles.eyebrowRange}>
+              {String(projectCount).padStart(2, '0')} PROJECTS
+            </span>
           </div>
+
           <h1 className={styles.title}>
-            <span className={styles.titleLine} data-reveal>Creative</span>
-            <span className={styles.titleLine} data-reveal>Digital</span>
-            <span className={`${styles.titleLine} ${styles.titleAccent}`} data-reveal>Playground</span>
+            <span className={styles.line} data-reveal>
+              <span className={styles.lineInner}>An archive</span>
+            </span>
+            <span className={styles.line} data-reveal>
+              <span className={styles.lineInner}>
+                of{' '}
+                <span className={styles.accent}>
+                  interactive
+                  <svg
+                    className={styles.underline}
+                    viewBox="0 0 260 14"
+                    fill="none"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 9 C 70 2.5, 190 2.5, 256 8.5"
+                      stroke="url(#wav)"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                    <defs>
+                      <linearGradient id="wav" x1="0" y1="0" x2="1" y2="0">
+                        <stop stopColor="var(--env-accent-light)" />
+                        <stop offset="1" stopColor="var(--env-accent)" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+              </span>
+            </span>
+            <span className={styles.line} data-reveal>
+              <span className={styles.lineInner}>projects.</span>
+            </span>
           </h1>
-          <p className={styles.sub} data-reveal>
-            An evolving archive of experiments, projects, and digital constructions.
-          </p>
-          <div className={styles.cta} data-reveal>
+
+          <div className={styles.meta} data-reveal>
+            <p className={styles.sub}>
+              A living collection of digital constructions — interfaces,
+              environments, and systems. The page responds to every project
+              you approach.
+            </p>
             <button
-              className="btn-explore"
+              className={`btn-explore ${styles.enterBtn}`}
               onClick={() => navigateTo('work')}
               data-cursor="hover"
             >
-              <span className="btn-explore-text">Explore Work</span>
+              <span className="btn-explore-text">Enter the archive</span>
               <span className="btn-explore-arrow">&rarr;</span>
             </button>
           </div>
-        </div>
-        <div className={`${styles.footer} ${active ? styles.footerVisible : ''}`}>
-          <span className={styles.footerItem}>Currently building</span>
-          <span className={styles.footerSep}>&middot;</span>
-          <span className={`${styles.footerItem} ${styles.footerHighlight}`}>
-            {String(projectCount).padStart(2, '0')} projects
-          </span>
-          <span className={styles.footerSep}>&middot;</span>
-          <span className={styles.footerItem}>and growing</span>
-        </div>
+        </section>
+
+        <aside className={styles.sideIndex} data-reveal>
+          <span className={styles.sideLabel}>INDEX</span>
+          {PROJECTS.map((p, i) => (
+            <button
+              key={p.id}
+              className={styles.sideItem}
+              data-cursor="nav"
+              onMouseEnter={() => theme.apply(p)}
+              onMouseLeave={() => theme.applyDefault()}
+              onFocus={() => theme.apply(p)}
+              onBlur={() => theme.applyDefault()}
+              onClick={() => navigateTo('work')}
+            >
+              <span className={styles.sideNum}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span className={styles.sideTitle}>{p.shortTitle}</span>
+            </button>
+          ))}
+          <span className={styles.sideRule} />
+          <span className={styles.sideNote}>hover a world</span>
+        </aside>
+      </div>
+
+      <div className={`${styles.footer} ${active ? styles.footerVisible : ''}`}>
+        <span>Interactive archive</span>
+        <span className={styles.footerSep}>&middot;</span>
+        <span className={styles.footerHighlight}>
+          {String(projectCount).padStart(2, '0')} projects
+        </span>
+        <span className={styles.footerSep}>&middot;</span>
+        <span>and growing</span>
       </div>
     </div>
   )

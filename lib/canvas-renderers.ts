@@ -5,16 +5,19 @@ type DrawFn = (
   w: number,
   h: number,
   frame: number,
-  theme: Project['theme']
+  project: Project
 ) => void
+
+type Atmosphere = Project['world'] extends { atmosphere: infer A } ? A : string
 
 function drawParticles(
   ctx: CanvasRenderingContext2D,
   w: number,
   h: number,
   frame: number,
-  theme: Project['theme']
+  project: Project
 ) {
+  const theme = project.theme
   const time = frame * 0.01
   const count = 40
 
@@ -57,6 +60,23 @@ function drawParticles(
     }
   }
 
+  if (project.world?.atmosphere === 'developer') {
+    ctx.strokeStyle = theme.accent
+    ctx.lineWidth = 1
+    for (let i = 0; i < 6; i++) {
+      const seed = i * 97.31 + time * 0.8
+      const sy = (Math.sin(seed) * 0.5 + 0.5) * h
+      const sx = ((seed * 37) % (w * 1.2)) - w * 0.1
+      const speed = 0.1 + (i % 3) * 0.04
+
+      ctx.globalAlpha = 0.05 + (i % 2) * 0.03
+      ctx.beginPath()
+      ctx.moveTo(sx, sy)
+      ctx.lineTo(sx + speed * 60, sy - speed * 18)
+      ctx.stroke()
+    }
+  }
+
   ctx.globalAlpha = 1
 }
 
@@ -65,8 +85,9 @@ function drawWaves(
   w: number,
   h: number,
   frame: number,
-  theme: Project['theme']
+  project: Project
 ) {
+  const theme = project.theme
   const time = frame * 0.02
   const layers = 3
 
@@ -106,6 +127,21 @@ function drawWaves(
     ctx.restore()
   }
 
+  if (project.world?.atmosphere === 'coffee') {
+    const cx = w * 0.5
+    const cy = h * 0.42
+    for (let i = 0; i < 3; i++) {
+      const life = (frame * 0.01 + i / 3) % 1
+      const radius = 10 + life * (Math.max(w, h) * 0.45)
+      ctx.globalAlpha = (1 - life) * 0.12
+      ctx.strokeStyle = theme.accent
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+      ctx.stroke()
+    }
+  }
+
   ctx.globalAlpha = 1
 }
 
@@ -114,8 +150,9 @@ function drawGeometry(
   w: number,
   h: number,
   frame: number,
-  theme: Project['theme']
+  project: Project
 ) {
+  const theme = project.theme
   const time = frame * 0.015
   const cx = w / 2
   const cy = h / 2
@@ -158,6 +195,35 @@ function drawGeometry(
   ctx.fillStyle = gradient
   ctx.fillRect(cx - 80, cy - 80, 160, 160)
 
+  if (project.world?.atmosphere === 'nexus') {
+    const scanPhase = (frame * 0.02) % 1
+    const scanX = scanPhase * w
+    ctx.globalAlpha = 0.12
+    ctx.fillStyle = theme.accent
+    ctx.fillRect(scanX - 1, 0, 2, h)
+    ctx.globalAlpha = 0.05
+    ctx.fillStyle = 'rgba(255,255,255,1)'
+    ctx.fillRect(scanX - 14, 0, 28, h)
+
+    const tick = 12
+    ctx.globalAlpha = 0.55
+    ctx.strokeStyle = theme.accent
+    ctx.lineWidth = 1.5
+    const corners: Array<[number, number, number, number]> = [
+      [0, 0, 1, 1],
+      [w, 0, -1, 1],
+      [0, h, 1, -1],
+      [w, h, -1, -1],
+    ]
+    corners.forEach(([x, y, dx, dy]) => {
+      ctx.beginPath()
+      ctx.moveTo(x + dx * tick, y)
+      ctx.lineTo(x, y)
+      ctx.lineTo(x, y + dy * tick)
+      ctx.stroke()
+    })
+  }
+
   ctx.globalAlpha = 1
 }
 
@@ -166,8 +232,9 @@ function drawGrid(
   w: number,
   h: number,
   frame: number,
-  theme: Project['theme']
+  project: Project
 ) {
+  const theme = project.theme
   const time = frame * 0.01
   const spacing = 20
 
@@ -206,6 +273,56 @@ function drawGrid(
     ctx.fillRect(col * spacing, row * spacing, spacing, spacing)
   }
 
+  if (project.world?.atmosphere === 'infra') {
+    const route: Array<[number, number]> = [
+      [w * 0.12, h * 0.86],
+      [w * 0.38, h * 0.62],
+      [w * 0.66, h * 0.72],
+      [w * 0.9, h * 0.3],
+    ]
+    ctx.strokeStyle = theme.accent
+    ctx.lineWidth = 1.5
+    ctx.setLineDash([6, 6])
+    ctx.globalAlpha = 0.18
+    ctx.beginPath()
+    route.forEach(([x, y], i) => {
+      if (i === 0) ctx.moveTo(x, y)
+      else ctx.lineTo(x, y)
+    })
+    ctx.stroke()
+    ctx.setLineDash([])
+
+    const travel = (frame * 0.008) % 1
+    const segLengths: number[] = []
+    let total = 0
+    for (let i = 0; i < route.length - 1; i++) {
+      const dist = Math.hypot(route[i + 1][0] - route[i][0], route[i + 1][1] - route[i][1])
+      segLengths.push(dist)
+      total += dist
+    }
+    let travelled = travel * total
+    let px = route[0][0]
+    let py = route[0][1]
+    for (let i = 0; i < segLengths.length; i++) {
+      if (travelled <= segLengths[i]) {
+        const t = travelled / segLengths[i]
+        px = route[i][0] + (route[i + 1][0] - route[i][0]) * t
+        py = route[i][1] + (route[i + 1][1] - route[i][1]) * t
+        break
+      }
+      travelled -= segLengths[i]
+    }
+    ctx.globalAlpha = 0.9
+    ctx.fillStyle = project.world.cursorColor
+    ctx.beginPath()
+    ctx.arc(px, py, 3.5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.globalAlpha = 0.25
+    ctx.beginPath()
+    ctx.arc(px, py, 9, 0, Math.PI * 2)
+    ctx.stroke()
+  }
+
   ctx.globalAlpha = 1
 }
 
@@ -219,7 +336,8 @@ const RENDERERS: Record<string, DrawFn> = {
 export function drawVisual(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
-  project: Project
+  project: Project,
+  animate: boolean = true
 ): { stop: () => void; restart: () => void } {
   const dpr = window.devicePixelRatio || 1
   const w = canvas.width / dpr
@@ -227,13 +345,13 @@ export function drawVisual(
 
   let frame = 0
   let animId: number | null = null
-  let running = true
+  let running = animate
   const renderer = RENDERERS[project.visualType] || drawParticles
 
   const draw = () => {
     ctx.clearRect(0, 0, w, h)
     frame++
-    renderer(ctx, w, h, frame, project.theme)
+    renderer(ctx, w, h, frame, project)
     if (running) {
       animId = requestAnimationFrame(draw)
     }
@@ -241,7 +359,7 @@ export function drawVisual(
 
   let visObserver: IntersectionObserver | null = null
 
-  if (typeof IntersectionObserver !== 'undefined') {
+  if (animate && typeof IntersectionObserver !== 'undefined') {
     visObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -259,7 +377,11 @@ export function drawVisual(
     visObserver.observe(canvas)
   }
 
-  draw()
+  if (animate) {
+    draw()
+  } else {
+    renderer(ctx, w, h, 30, project)
+  }
 
   return {
     stop() {
@@ -274,3 +396,5 @@ export function drawVisual(
     },
   }
 }
+
+export type { Atmosphere }

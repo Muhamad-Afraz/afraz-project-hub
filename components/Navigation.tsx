@@ -85,6 +85,7 @@ export default function Navigation({
           onClick={() => navigateTo('home')}
           data-nav="home"
           data-cursor="nav"
+          aria-label="Afraz — Home"
         >
           <span className={styles.logoText}>AFRAZ</span>
           <span className={styles.logoDot} />
@@ -94,6 +95,7 @@ export default function Navigation({
             className={`nav-link ${currentView === 'work' || currentView === 'project' ? 'active' : ''}`}
             onClick={() => navigateTo('work')}
             data-cursor="nav"
+            aria-current={currentView === 'work' || currentView === 'project' ? 'page' : undefined}
           >
             WORK
           </button>
@@ -101,11 +103,17 @@ export default function Navigation({
             className={`nav-link ${currentView === 'lab' ? 'active' : ''}`}
             onClick={() => navigateTo('lab')}
             data-cursor="nav"
+            aria-current={currentView === 'lab' ? 'page' : undefined}
           >
             LAB
           </button>
         </div>
-        <div ref={counterRef} className={styles.counter}>
+        <div
+          ref={counterRef}
+          className={styles.counter}
+          aria-live="polite"
+          aria-label="Project count"
+        >
           <span className="nav-counter-current">
             {String(visibleCount).padStart(2, '0')}
           </span>

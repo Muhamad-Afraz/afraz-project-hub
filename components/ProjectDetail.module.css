@@ -7,6 +7,7 @@
 
 .detail {
   min-height: 100vh;
+  min-height: 100svh;
   padding: var(--space-4xl) var(--page-padding);
   max-width: 1200px;
   margin: 0 auto;
@@ -137,19 +138,69 @@
   border-radius: var(--radius-sm);
 }
 
-.infoLink {
-  display: inline-flex;
-  align-items: center;
+.builtList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-sm);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  color: var(--theme-accent);
-  border-bottom: 1px solid transparent;
-  transition: border-color var(--duration-normal) var(--ease-out);
+  max-width: 600px;
 }
 
-.infoLink:hover {
+.builtItem {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-normal);
+}
+
+.builtMark {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--theme-accent);
+  transform: translateY(-1px);
+}
+
+.visit {
+  margin-top: var(--space-md);
+}
+
+.visitLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text);
+  padding: var(--space-md) var(--space-xl);
+  border: 1px solid var(--color-border-hover);
+  border-radius: var(--radius-full);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .visitLink {
+    cursor: none;
+  }
+}
+
+.visitLink:hover {
   border-color: var(--theme-accent);
+  background: color-mix(in srgb, var(--theme-accent) 10%, transparent);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--theme-accent) 18%, transparent);
+}
+
+.visitArrow {
+  color: var(--theme-accent);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.visitLink:hover .visitArrow {
+  transform: translate(2px, -2px);
 }
 
 .nav {
@@ -169,7 +220,12 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-full);
   transition: all var(--duration-normal) var(--ease-out);
-  cursor: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .navBtn {
+    cursor: none;
+  }
 }
 
 .navBtn:hover {

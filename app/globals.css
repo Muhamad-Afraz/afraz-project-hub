@@ -1,24 +1,46 @@
 :root {
-  /* === Colors === */
-  --color-bg: #0a0a0b;
-  --color-bg-secondary: #111113;
+  /* === Environment (written live by the theme engine) === */
+  --env-bg: #0a0a0b;
+  --env-bg-secondary: #111114;
+  --env-text: #f0f1f4;
+  --env-text-secondary: #a2a6b0;
+  --env-text-muted: #5c616b;
+  --env-accent: #7c3aed;
+  --env-accent-light: #8b5cf6;
+  --env-accent-glow: rgba(124, 58, 237, 0.32);
+  --env-accent-glow-alpha: 0.32;
+  --env-border: rgba(255, 255, 255, 0.07);
+  --env-border-strong: rgba(255, 255, 255, 0.14);
+  --env-border-alpha: 0.07;
+  --env-grid-line: rgba(255, 255, 255, 0.025);
+  --env-grid-alpha: 0.05;
+  --env-grid-size: 88px;
+  --env-grain: 0.035;
+  --env-cursor: #c6cad2;
+  --env-horizon: rgba(37, 27, 62, 0.55);
+  --env-horizon-alpha: 0.55;
+  --env-under: rgba(5, 5, 10, 0.45);
+
+  /* === Colors (neutral archive palette) === */
+  --color-bg: var(--env-bg);
+  --color-bg-secondary: var(--env-bg-secondary);
   --color-bg-tertiary: #18181b;
   --color-surface: #1c1c1f;
   --color-surface-hover: #232326;
 
-  --color-text: #f4f4f5;
-  --color-text-secondary: #a1a1aa;
-  --color-text-muted: #52525b;
+  --color-text: var(--env-text);
+  --color-text-secondary: var(--env-text-secondary);
+  --color-text-muted: var(--env-text-muted);
   --color-text-dim: #27272a;
 
-  --color-accent: #7C3AED;
-  --color-accent-light: #8B5CF6;
-  --color-accent-dark: #6D28D9;
-  --color-accent-glow: rgba(124, 58, 237, 0.3);
+  --color-accent: var(--env-accent);
+  --color-accent-light: var(--env-accent-light);
+  --color-accent-dark: #6d28d9;
+  --color-accent-glow: var(--env-accent-glow);
   --color-accent-subtle: rgba(124, 58, 237, 0.08);
 
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-hover: rgba(255, 255, 255, 0.12);
+  --color-border: var(--env-border);
+  --color-border-hover: var(--env-border-strong);
   --color-border-accent: rgba(124, 58, 237, 0.3);
 
   --color-white: #ffffff;
@@ -39,14 +61,14 @@
   --text-4xl: 2.5rem;
   --text-5xl: 3.5rem;
   --text-6xl: 4.5rem;
-  --text-hero: clamp(3rem, 8vw, 8rem);
+  --text-hero: clamp(3rem, 7vw, 6.75rem);
 
-  --leading-tight: 1.05;
-  --leading-snug: 1.15;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.65;
+  --leading-tight: 1.02;
+  --leading-snug: 1.18;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.7;
 
-  --tracking-tight: -0.02em;
+  --tracking-tight: -0.025em;
   --tracking-normal: 0;
   --tracking-wide: 0.05em;
   --tracking-wider: 0.1em;
@@ -74,9 +96,9 @@
   --radius-full: 9999px;
 
   /* === Shadows === */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-  --shadow-lg: 0 8px 30px rgba(0,0,0,0.5);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 30px var(--color-accent-glow);
 
   /* === Transitions === */
@@ -99,11 +121,17 @@
   --z-overlay: 500;
   --z-modal: 200;
 
-  /* === Dynamic Theme === */
-  --theme-accent: var(--color-accent);
-  --theme-accent-glow: var(--color-accent-glow);
-  --theme-bg: var(--color-bg);
-  --theme-text: var(--color-text);
+  /* === Dynamic Theme (legacy aliases → environment) === */
+  --theme-accent: var(--env-accent);
+  --theme-accent-glow: var(--env-accent-glow);
+  --theme-bg: var(--env-bg);
+  --theme-text: var(--env-text);
+}
+
+@supports (color: color-mix(in srgb, red 10%, transparent)) {
+  :root {
+    --color-accent-subtle: color-mix(in srgb, var(--env-accent) 9%, transparent);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -129,12 +157,12 @@ html {
 
 body {
   font-family: var(--font-body);
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--env-bg);
+  color: var(--env-text);
   overflow-x: hidden;
   min-height: 100vh;
+  min-height: 100svh;
   line-height: var(--leading-normal);
-  transition: background-color var(--duration-slower) var(--ease-smooth);
 }
 
 a {
@@ -144,7 +172,6 @@ a {
 
 button {
   font-family: inherit;
-  cursor: none;
   border: none;
   background: none;
   color: inherit;
@@ -161,6 +188,11 @@ img, video {
   color: var(--color-white);
 }
 
+:focus-visible {
+  outline: 1px solid var(--env-accent);
+  outline-offset: 3px;
+}
+
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -175,7 +207,70 @@ img, video {
   background: var(--color-text-secondary);
 }
 
-/* Ambient Background */
+/* Hide the OS cursor only when the custom cursor is actually active */
+@media (hover: hover) and (pointer: fine) {
+  @media (prefers-reduced-motion: no-preference) {
+    body, body a, body button, body [role='button'] {
+      cursor: none;
+    }
+  }
+}
+
+/* === Views === */
+.views {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  opacity: 0;
+  visibility: hidden;
+  transition: visibility 0s linear;
+  padding-top: var(--nav-height);
+}
+
+.view.active {
+  position: relative;
+  opacity: 1;
+  visibility: visible;
+  transition: visibility 0s linear;
+}
+
+/* Skip link — visually hidden until keyboard focus */
+.skip-link {
+  position: fixed;
+  top: var(--space-lg);
+  left: var(--space-lg);
+  z-index: var(--z-cursor);
+  padding: var(--space-sm) var(--space-lg);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-wide);
+  color: var(--env-text);
+  background: var(--env-bg);
+  border: 1px solid var(--env-border-strong);
+  border-radius: var(--radius-full);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* === Ambient Background === */
 .ambient {
   position: fixed;
   top: 0;
@@ -184,25 +279,33 @@ img, video {
   height: 100%;
   pointer-events: none;
   z-index: 0;
+  overflow: hidden;
 }
 
 .ambient-gradient {
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    ellipse 80% 50% at 50% -20%,
-    var(--theme-accent-glow) 0%,
-    transparent 60%
+    ellipse 115% 62% at 50% -18%,
+    var(--env-horizon) 0%,
+    transparent 58%
   );
-  opacity: 0.4;
-  transition: background var(--duration-slower) var(--ease-smooth),
-              opacity var(--duration-slower) var(--ease-smooth);
+}
+
+.ambient-under {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 95% 48% at 50% 112%,
+    var(--env-under) 0%,
+    transparent 64%
+  );
 }
 
 .ambient-grain {
   position: absolute;
   inset: 0;
-  opacity: 0.03;
+  opacity: var(--env-grain);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 256px;
@@ -212,15 +315,48 @@ img, video {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-  background-size: 60px 60px;
-  opacity: 0;
-  transition: opacity var(--duration-slower) var(--ease-smooth);
+    linear-gradient(var(--env-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--env-grid-line) 1px, transparent 1px),
+    linear-gradient(var(--env-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--env-grid-line) 1px, transparent 1px);
+  background-size:
+    var(--env-grid-size) var(--env-grid-size),
+    var(--env-grid-size) var(--env-grid-size),
+    calc(var(--env-grid-size) / 4) calc(var(--env-grid-size) / 4),
+    calc(var(--env-grid-size) / 4) calc(var(--env-grid-size) / 4);
+  opacity: var(--env-grid-alpha);
+  -webkit-mask-image: radial-gradient(ellipse 95% 75% at 50% 32%, #000 15%, transparent 80%);
+  mask-image: radial-gradient(ellipse 95% 75% at 50% 32%, #000 15%, transparent 80%);
 }
 
 .ambient-grid.visible {
-  opacity: 1;
+  opacity: var(--env-grid-alpha);
+}
+
+/* NEXUS — architectural technical grid */
+body[data-world='nexus'] .ambient-grid {
+  --env-grid-line: rgba(148, 158, 255, 0.05);
+  -webkit-mask-image: none;
+  mask-image: none;
+  background-image:
+    linear-gradient(var(--env-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--env-grid-line) 1px, transparent 1px),
+    linear-gradient(var(--env-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--env-grid-line) 1px, transparent 1px);
+}
+
+/* POTHOLFIX — wide route framing */
+body[data-world='infra'] .ambient-grid {
+  --env-grid-line: rgba(74, 222, 148, 0.04);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 45%, #000 18%, transparent 84%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 45%, #000 18%, transparent 84%);
+}
+
+/* COFFEE — barely-there warm air */
+body[data-world='coffee'] .ambient-grid {
+  --env-grid-line: rgba(255, 224, 189, 0.018);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 30%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 30%, transparent 100%);
 }
 
 /* Section Title */
@@ -244,7 +380,6 @@ img, video {
   font-size: var(--text-sm);
   letter-spacing: var(--tracking-wide);
   transition: all var(--duration-normal) var(--ease-out);
-  cursor: none;
 }
 
 .btn-explore:hover {
@@ -263,5 +398,5 @@ img, video {
 
 [data-reveal] {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(22px);
 }

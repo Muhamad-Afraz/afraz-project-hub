@@ -1,5 +1,8 @@
 'use client'
 
+import { useRef } from 'react'
+import { useReveals } from '@/lib/useReveals'
+import SiteFooter from './SiteFooter'
 import styles from '@/components/LabView.module.css'
 
 interface Props {
@@ -7,8 +10,13 @@ interface Props {
 }
 
 export default function LabView({ active }: Props) {
+  const viewRef = useRef<HTMLDivElement>(null)
+
+  useReveals(active, viewRef)
+
   return (
     <div
+      ref={viewRef}
       className={`view ${active ? 'active' : ''} ${styles.lab}`}
       data-view="lab"
     >
@@ -21,7 +29,7 @@ export default function LabView({ active }: Props) {
         </div>
         <div className={styles.grid}>
           <div className={styles.empty}>
-            <div className={styles.emptyIcon}>
+            <div className={styles.emptyIcon} aria-hidden="true">
               <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
                 <path
                   d="M24 4L28 16H40L30 24L34 36L24 28L14 36L18 24L8 16H20L24 4Z"
@@ -32,13 +40,14 @@ export default function LabView({ active }: Props) {
               </svg>
             </div>
             <p className={styles.emptyText}>
-              Experiments incoming. The lab is being set up.
+              Experiments, prototypes, and UI tests are being brewed here.
             </p>
             <span className={styles.emptyStatus}>
               Status: <span className={styles.blink}>Active</span>
             </span>
           </div>
         </div>
+        <SiteFooter />
       </div>
     </div>
   )

@@ -49,6 +49,7 @@ function AppContent() {
           const tl = gsap.timeline({
             onComplete: () => {
               clone.remove()
+              gsap.killTweensOf(clone)
               setCurrentView('project')
               setBodyView('project')
               setIsTransitioning(false)
@@ -96,11 +97,15 @@ function AppContent() {
 
     theme.applyDefault()
 
-    gsap.to(document.querySelector('.ambient'), {
+    const ambient = document.querySelector('.ambient') as HTMLElement | null
+    if (ambient) gsap.killTweensOf(ambient)
+
+    gsap.to(ambient, {
       opacity: 1,
       duration: 0.5,
       ease: 'power2.inOut',
       onComplete: () => {
+        if (ambient) ambient.style.opacity = ''
         setCurrentProject(null)
         setCurrentView('work')
         setBodyView('work')
@@ -115,25 +120,48 @@ function AppContent() {
       setIsTransitioning(true)
 
       const currentEl = document.querySelector('.view.active') as HTMLElement | null
+      const ambient = document.querySelector('.ambient') as HTMLElement | null
 
-      if (currentEl && !prefersReducedMotion()) {
-        gsap.to(currentEl, {
-          opacity: 0,
-          y: -20,
-          duration: 0.3,
-          ease: 'power2.in',
-          onComplete: () => {
-            theme.applyDefault()
-            setCurrentView(view)
-            setBodyView(view)
-            setIsTransitioning(false)
-          },
-        })
-      } else {
+      const finish = () => {
         theme.applyDefault()
+        if (ambient) {
+          gsap.killTweensOf(ambient)
+          gsap.to(ambient, {
+            opacity: 1,
+            duration: prefersReducedMotion() ? 0.01 : 0.3,
+            ease: 'power2.inOut',
+            onComplete: () => {
+              ambient.style.opacity = ''
+            },
+          })
+        }
         setCurrentView(view)
         setBodyView(view)
         setIsTransitioning(false)
+      }
+
+      window.scrollTo(0, 0)
+
+      if (currentEl) {
+        if (prefersReducedMotion()) {
+          currentEl.style.opacity = ''
+          currentEl.style.transform = ''
+          finish()
+        } else {
+          gsap.to(currentEl, {
+            opacity: 0,
+            y: -20,
+            duration: 0.3,
+            ease: 'power2.in',
+            onComplete: () => {
+              currentEl.style.opacity = ''
+              currentEl.style.transform = ''
+              finish()
+            },
+          })
+        }
+      } else {
+        finish()
       }
     },
     [isTransitioning, currentView, theme]
@@ -145,9 +173,13 @@ function AppContent() {
 
   return (
     <>
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
       <Cursor />
-      <div className="ambient" id="ambient">
+      <div className="ambient" id="ambient" aria-hidden="true">
         <div className="ambient-gradient" />
+        <div className="ambient-under" />
         <div className="ambient-grain" />
         <div className="ambient-grid" id="ambientGrid" />
       </div>
@@ -159,7 +191,7 @@ function AppContent() {
         totalCount={PROJECTS.length}
       />
 
-      <main className="views">
+      <main id="main-content" className="views">
         <HomeView
           active={currentView === 'home'}
           navigateTo={navigateTo}
@@ -172,6 +204,7 @@ function AppContent() {
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
           setVisibleCount={setVisibleCount}
+          visibleCount={visibleCount}
         />
         <LabView active={currentView === 'lab'} />
         {currentProject && (

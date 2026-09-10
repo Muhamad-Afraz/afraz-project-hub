@@ -1,80 +1,197 @@
 .home {
   display: flex;
   align-items: center;
-  justify-content: center;
   min-height: 100vh;
+  min-height: 100svh;
   padding-top: 0;
 }
 
 .content {
   width: 100%;
   padding: var(--space-5xl) var(--page-padding);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(230px, 0.7fr);
+  align-items: end;
+  gap: clamp(2rem, 5vw, 6rem);
   min-height: 100vh;
+  min-height: 100svh;
 }
 
 .hero {
-  text-align: center;
   max-width: 900px;
 }
 
 .eyebrow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
   margin-bottom: var(--space-2xl);
-}
-
-.line {
-  width: 40px;
-  height: 1px;
-  background: var(--color-text-muted);
-}
-
-.tag {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-wider);
-  color: var(--color-text-muted);
+  color: var(--env-text-muted);
   text-transform: uppercase;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--env-accent);
+  box-shadow: 0 0 12px var(--env-accent-glow);
+}
+
+.eyebrowRange {
+  margin-left: auto;
+  opacity: 0.6;
 }
 
 .title {
   font-family: var(--font-display);
-  font-size: var(--text-hero);
-  font-weight: 700;
-  line-height: var(--leading-tight);
+  font-size: clamp(3rem, 8.3vw, 6.9rem);
+  font-weight: 600;
+  line-height: 0.98;
   letter-spacing: var(--tracking-tight);
-  margin-bottom: var(--space-xl);
+  margin-bottom: var(--space-2xl);
 }
 
-.titleLine {
+.line {
   display: block;
+  overflow: hidden;
+  padding: 0.04em 0;
 }
 
-.titleAccent {
-  background: linear-gradient(135deg, var(--color-accent-light), var(--color-accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.lineInner {
+  display: inline-block;
+  transform: translateY(118%);
+  transition: transform 1.05s var(--ease-out);
+}
+
+.home:global(.active) .lineInner {
+  transform: translateY(0);
+}
+
+.accent {
+  position: relative;
+  display: inline-block;
+  color: var(--env-accent);
+}
+
+.underline {
+  position: absolute;
+  left: -0.5%;
+  right: -0.5%;
+  bottom: -0.14em;
+  width: 101%;
+  height: 0.18em;
+  overflow: visible;
+}
+
+.underline path {
+  stroke-dasharray: 320;
+  stroke-dashoffset: 320;
+  transition: stroke-dashoffset 1.2s var(--ease-out) 0.5s;
+}
+
+.home:global(.active) .underline path {
+  stroke-dashoffset: 0;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xl);
 }
 
 .sub {
   font-size: var(--text-lg);
-  color: var(--color-text-secondary);
-  max-width: 500px;
-  margin: 0 auto var(--space-2xl);
+  color: var(--env-text-secondary);
+  max-width: 460px;
   line-height: var(--leading-relaxed);
 }
 
-.cta {
-  margin-top: var(--space-xl);
+.enterBtn {
+  margin-top: var(--space-sm);
 }
 
+/* === Side archive index === */
+.sideIndex {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  justify-self: end;
+  padding-bottom: var(--space-lg);
+}
+
+.sideLabel {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.34em;
+  color: var(--env-text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.sideItem {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-md);
+  padding: 9px 2px;
+  font-family: var(--font-mono);
+  color: var(--env-text-muted);
+  transition: color var(--duration-normal) var(--ease-out);
+  border-bottom: 1px solid transparent;
+}
+
+.sideItem:hover,
+.sideItem:focus-visible {
+  color: var(--env-text);
+}
+
+.sideNum {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  opacity: 0.55;
+  transition: color var(--duration-normal) var(--ease-out);
+}
+
+.sideItem:hover .sideNum {
+  color: var(--env-accent);
+  opacity: 1;
+}
+
+.sideTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  transform: translateX(0);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.sideItem:hover .sideTitle {
+  transform: translateX(6px);
+}
+
+.sideRule {
+  width: 1px;
+  height: 34px;
+  background: var(--env-border-strong);
+  margin-top: var(--space-sm);
+}
+
+.sideNote {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.26em;
+  color: var(--env-text-muted);
+  margin-top: var(--space-sm);
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* === Footer === */
 .footer {
   position: fixed;
   bottom: var(--space-xl);
@@ -82,10 +199,14 @@
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
+  max-width: calc(100vw - var(--page-padding) * 2);
+  text-align: center;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  color: var(--env-text-muted);
   letter-spacing: var(--tracking-wide);
   z-index: 10;
   opacity: 0;
@@ -98,17 +219,41 @@
 }
 
 .footerHighlight {
-  color: var(--theme-accent);
+  color: var(--env-accent);
 }
 
 .footerSep {
-  color: var(--color-text-dim);
+  color: var(--env-text-muted);
+  opacity: 0.5;
+}
+
+@media (max-width: 1024px) {
+  .content {
+    grid-template-columns: 1fr;
+    align-items: center;
+    padding-top: var(--space-4xl);
+    padding-bottom: var(--space-4xl);
+  }
+
+  .sideIndex {
+    display: none;
+  }
+
+  .eyebrowRange {
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 768px) {
   .title {
-    font-size: clamp(2.5rem, 12vw, 4rem);
+    font-size: clamp(2.6rem, 14vw, 4.2rem);
+    line-height: 1.02;
   }
+
+  .sub {
+    font-size: var(--text-base);
+  }
+
   .footer {
     bottom: var(--space-md);
     font-size: 0.65rem;
@@ -117,18 +262,22 @@
 }
 
 @media (max-width: 480px) {
-  .sub {
-    font-size: var(--text-base);
+  .eyebrow {
+    font-size: 0.66rem;
+    gap: var(--space-sm);
   }
 }
 
 @media (max-height: 500px) and (orientation: landscape) {
   .content {
     padding: var(--space-xl) var(--page-padding);
+    min-height: auto;
   }
+
   .title {
     font-size: clamp(2rem, 6vw, 3rem);
   }
+
   .footer {
     position: relative;
     bottom: auto;

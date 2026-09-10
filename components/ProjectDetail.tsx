@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { gsap } from 'gsap'
 import { prefersReducedMotion, formatIndex } from '@/lib/utils'
-import { Project, ViewName } from '@/lib/types'
+import { Project } from '@/lib/types'
 import { useThemeSystem } from '@/lib/useThemeSystem'
 import CanvasVisual from './CanvasVisual'
 import styles from '@/components/ProjectDetail.module.css'
@@ -32,39 +32,15 @@ export default function ProjectDetail({
 
   const goToNext = useCallback(() => {
     if (projectIndex < projects.length - 1) {
-      const next = projects[projectIndex + 1]
-      animateTransition(next)
+      openProject(projects[projectIndex + 1])
     }
-  }, [projectIndex, projects, project])
+  }, [projectIndex, projects, openProject])
 
   const goToPrev = useCallback(() => {
     if (projectIndex > 0) {
-      const prev = projects[projectIndex - 1]
-      animateTransition(prev)
+      openProject(projects[projectIndex - 1])
     }
-  }, [projectIndex, projects, project])
-
-  const animateTransition = (nextProject: Project) => {
-    if (prefersReducedMotion()) {
-      theme.apply(nextProject)
-      return
-    }
-
-    gsap.to([headerRef.current, bodyRef.current], {
-      opacity: 0,
-      y: -15,
-      duration: 0.25,
-      ease: 'power2.in',
-      onComplete: () => {
-        theme.apply(nextProject)
-        gsap.fromTo(
-          [headerRef.current, bodyRef.current],
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', stagger: 0.1 }
-        )
-      },
-    })
-  }
+  }, [projectIndex, projects, openProject])
 
   useEffect(() => {
     if (!active) return
@@ -78,9 +54,8 @@ export default function ProjectDetail({
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [active, goToNext, goToPrev, closeProject])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!active || !viewRef.current) return
-
     if (prefersReducedMotion()) return
 
     const tl = gsap.timeline()
@@ -97,7 +72,11 @@ export default function ProjectDetail({
       { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' },
       0.3
     )
-  }, [active])
+  }, [active, project.id])
+
+  useEffect(() => {
+    if (active) theme.apply(project)
+  }, [active, project, theme])
 
   const prevVisible = projectIndex > 0
   const nextVisible = projectIndex < projects.length - 1
@@ -113,8 +92,9 @@ export default function ProjectDetail({
           className={styles.close}
           onClick={closeProject}
           data-cursor="close"
+          aria-label="Close project"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path
               d="M18 6L6 18M6 6L18 18"
               stroke="currentColor"
@@ -135,7 +115,11 @@ export default function ProjectDetail({
         </div>
 
         <div ref={bodyRef} className={styles.body}>
-          <div id="projectDetailPreview" className={styles.preview}>
+          <div
+            id="projectDetailPreview"
+            className={styles.preview}
+            aria-hidden="true"
+          >
             <CanvasVisual project={project} />
           </div>
           <div className={styles.info}>
@@ -144,25 +128,38 @@ export default function ProjectDetail({
               <p className={styles.infoValue}>{project.longDescription}</p>
             </div>
             <div className={styles.infoBlock}>
-              <span className={styles.infoLabel}>Tags</span>
+              <span className={styles.infoLabel}>What was built</span>
+              <ul className={styles.builtList}>
+                {project.built.map((item) => (
+                  <li key={item} className={styles.builtItem}>
+                    <span className={styles.builtMark} aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className={styles.infoBlock}>
+              <span className={styles.infoLabel}>Technologies</span>
               <div className={styles.tagList}>
-                {project.tags.map((tag) => (
-                  <span key={tag} className={styles.tag}>
-                    {tag}
+                {project.tech.map((tech) => (
+                  <span key={tech} className={styles.tag}>
+                    {tech}
                   </span>
                 ))}
               </div>
             </div>
             {project.url && project.url !== '#' && (
-              <div className={styles.infoBlock}>
-                <span className={styles.infoLabel}>Link</span>
+              <div className={styles.visit}>
                 <a
                   href={project.url}
-                  className={styles.infoLink}
+                  className={styles.visitLink}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Visit Project &#8599;
+                  <span className={styles.visitLabel}>Visit Project</span>
+                  <span className={styles.visitArrow} aria-hidden="true">
+                    &#8599;
+                  </span>
                 </a>
               </div>
             )}
@@ -174,6 +171,8 @@ export default function ProjectDetail({
             className={styles.navBtn}
             onClick={goToPrev}
             data-cursor="prev"
+            aria-label="Previous project"
+            disabled={!prevVisible}
             style={{ visibility: prevVisible ? 'visible' : 'hidden' }}
           >
             <span className={styles.navLabel}>&#8592; Previous</span>
@@ -182,6 +181,8 @@ export default function ProjectDetail({
             className={styles.navBtn}
             onClick={goToNext}
             data-cursor="next"
+            aria-label="Next project"
+            disabled={!nextVisible}
             style={{ visibility: nextVisible ? 'visible' : 'hidden' }}
           >
             <span className={styles.navLabel}>Next &#8594;</span>

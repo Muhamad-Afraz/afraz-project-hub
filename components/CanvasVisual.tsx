@@ -3,6 +3,7 @@
 import { useRef, useEffect } from 'react'
 import { drawVisual } from '@/lib/canvas-renderers'
 import { Project } from '@/lib/types'
+import { prefersReducedMotion } from '@/lib/utils'
 
 interface Props {
   project: Project
@@ -12,7 +13,7 @@ interface Props {
 
 export default function CanvasVisual({ project, width, height }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const cleanupRef = useRef<{ stop: () => void } | null>(null)
+  const cleanupRef = useRef<{ stop: () => void; restart: () => void } | null>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -24,10 +25,13 @@ export default function CanvasVisual({ project, width, height }: Props) {
     const container = canvas.parentElement
     if (!container) return
 
+    const animate = !prefersReducedMotion()
+
     const resize = () => {
       const rect = container.getBoundingClientRect()
       const w = width || rect.width
       const h = height || rect.height
+      if (w === 0 || h === 0) return
       const dpr = window.devicePixelRatio || 1
       canvas.width = w * dpr
       canvas.height = h * dpr
@@ -37,11 +41,34 @@ export default function CanvasVisual({ project, width, height }: Props) {
     }
 
     resize()
-    cleanupRef.current = drawVisual(ctx, canvas, project)
+
+    const startVisual = () => {
+      cleanupRef.current?.stop()
+      cleanupRef.current = drawVisual(ctx, canvas, project, animate)
+    }
+
+    startVisual()
+
+    let resizeObserver: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined' && !width && !height) {
+      resizeObserver = new ResizeObserver(() => {
+        resize()
+        startVisual()
+      })
+      resizeObserver.observe(container)
+    }
+
+    const onOrientationChange = () => {
+      resize()
+      startVisual()
+    }
+    window.addEventListener('orientationchange', onOrientationChange)
 
     return () => {
       cleanupRef.current?.stop()
       cleanupRef.current = null
+      resizeObserver?.disconnect()
+      window.removeEventListener('orientationchange', onOrientationChange)
     }
   }, [project, width, height])
 

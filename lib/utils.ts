@@ -96,3 +96,72 @@ export function interpolateColors(from: string, to: string, t: number): string {
 export function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 }
+
+export function lerpNum(from: number, to: number, t: number): number {
+  return from + (to - from) * t
+}
+
+export interface RGBA {
+  r: number
+  g: number
+  b: number
+  a: number
+}
+
+export function parseCssColor(input: string): RGBA {
+  const s = (input || '').trim().toLowerCase()
+  if (!s) return { r: 124, g: 58, b: 237, a: 1 }
+
+  if (s[0] === '#') {
+    let hex = s.slice(1)
+    if (hex.length === 3) hex = hex.split('').map((c) => c + c).join('')
+    if (hex.length === 4) hex = hex.split('').map((c) => c + c).join('')
+    const full = hex.length === 6 ? hex + 'ff' : hex
+    const num = parseInt(full.slice(0, 6), 16)
+    return {
+      r: (num >> 16) & 255,
+      g: (num >> 8) & 255,
+      b: num & 255,
+      a: full.length >= 8 ? parseInt(full.slice(6, 8), 16) / 255 : 1,
+    }
+  }
+
+  const match = s.match(/rgba?\(([^)]+)\)/)
+  if (match) {
+    const parts = match[1].split(',').map((p) => parseFloat(p.trim()))
+    return {
+      r: isNaN(parts[0]) ? 0 : parts[0],
+      g: isNaN(parts[1]) ? 0 : parts[1],
+      b: isNaN(parts[2]) ? 0 : parts[2],
+      a: parts[3] === undefined || isNaN(parts[3]) ? 1 : parts[3],
+    }
+  }
+
+  return { r: 124, g: 58, b: 237, a: 1 }
+}
+
+export function toCssColor(c: RGBA): string {
+  const r = Math.round(c.r)
+  const g = Math.round(c.g)
+  const b = Math.round(c.b)
+  return c.a >= 1
+    ? `rgb(${r},${g},${b})`
+    : `rgba(${r},${g},${b},${c.a.toFixed(3)})`
+}
+
+export function interpolateRgba(from: RGBA, to: RGBA, t: number): RGBA {
+  return {
+    r: from.r + (to.r - from.r) * t,
+    g: from.g + (to.g - from.g) * t,
+    b: from.b + (to.b - from.b) * t,
+    a: from.a + (to.a - from.a) * t,
+  }
+}
+
+/**
+ * Whether JS-driven animation should run at all.
+ * Works alongside the global CSS prefers-reduced-motion rule.
+ */
+export function shouldAnimate(): boolean {
+  return !prefersReducedMotion()
+}
