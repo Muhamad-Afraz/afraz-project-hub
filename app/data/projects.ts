@@ -1,6 +1,18 @@
+export type ProjectType = 'web' | 'experimental' | 'client' | 'concept'
+export type FilterKey = 'all' | ProjectType
+
+export const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'web', label: 'Web' },
+  { key: 'experimental', label: 'Experimental' },
+  { key: 'client', label: 'Client' },
+  { key: 'concept', label: 'Concept' },
+]
+
 export type ProjectTheme = {
   accent: string
   accent2: string
+  bg: string
 }
 
 export type Project = {
@@ -8,6 +20,9 @@ export type Project = {
   index: string
   title: string
   category: string
+  type: ProjectType
+  status: string
+  url: string
   tagline: string
   description: string
   tags: string[]
@@ -58,69 +73,87 @@ const withImages = (input: ProjectInput): Project => ({
 
 export const projects: Project[] = [
   withImages({
-    id: 'nexus',
+    id: 'portfolio',
     index: '01',
-    title: 'NEXUS',
-    category: 'Web / Experiments',
-    tagline: 'A living machine-made playground.',
+    title: 'Portfolio',
+    category: 'Web / Archive',
+    type: 'web',
+    status: 'Active · 2026',
+    url: 'https://afrazcreates.vercel.app/',
+    tagline: 'My Portfolio — Who I am, what I do, how I do it',
     description:
-      'NEXUS strands particles, grids and slow-moving glows into one interconnected archive. Everything reacts to the pointer and drifts like it is alive.',
-    tags: ['Canvas', 'Interaction', 'GPU'],
-    theme: { accent: '#a78bfa', accent2: '#7c3aed' },
+      'My personal portfolio about me, my creations and my skills — designed to showcase what I do and how I think as a developer.',
+    tags: ['React', 'Next.js', 'Interaction'],
+    theme: { accent: '#b6ff2e', accent2: '#5ca416', bg: '#0c1009' },
   }),
   withImages({
-    id: 'flux',
+    id: 'coffee-house',
     index: '02',
-    title: 'FLUX',
-    category: 'Motion / Visual',
-    tagline: 'Timelines folded into light.',
-    description:
-      'FLUX is a study of time and movement — frame-shifting gradients, trailing light, and time-stretched type that flows like liquid on a dark screen.',
-    tags: ['GSAP', 'Shaders', 'Motion'],
-    theme: { accent: '#67e8f9', accent2: '#0891b2' },
-  }),
-  withImages({
-    id: 'ember',
-    index: '03',
-    title: 'EMBER',
+    title: 'Coffee-House',
     category: 'Client / Web',
-    tagline: 'Heat mapped into interface.',
+    type: 'client',
+    status: 'Active · 2026',
+    url: 'https://housecoffee.vercel.app/',
+    tagline: 'Coffee Shop based website — Smooth, Luxury, interactive.',
     description:
-      'EMBER is a brand system turned into a living interface — amber fields, ember particles and a moody glow built for a studio that burns bright.',
-    tags: ['Product', 'Branding', 'UI'],
-    theme: { accent: '#fbbf24', accent2: '#ea580c' },
+      'A modern coffee shop website designed with a clean interface, smooth interactions, and a warm, inviting experience.',
+    tags: ['Design', 'Type', 'Web'],
+    theme: { accent: '#ddc19c', accent2: '#8a5a33', bg: '#191009' },
   }),
   withImages({
-    id: 'vortex',
+    id: 'nexus-2027',
+    index: '03',
+    title: 'Nexus2027-Event',
+    category: 'Web / Event',
+    type: 'web',
+    status: 'Active · 2026',
+    url: 'https://nexus2027.vercel.app/',
+    tagline: 'An Event Hub — Futuristic, Cool, Informative',
+    description:
+      'A futuristic event platform featuring project showcases, speakers, schedules, venue exploration, and registration.',
+    tags: ['Events', 'Design', 'Web'],
+    theme: { accent: '#a78bfa', accent2: '#38bdf8', bg: '#0a0e26' },
+  }),
+  withImages({
+    id: 'building-01',
     index: '04',
-    title: 'VORTEX',
-    category: 'Art / Concept',
-    tagline: 'A spiral of noise and bloom.',
+    title: 'Building 04',
+    category: 'Building',
+    type: 'experimental',
+    status: 'Under construction',
+    url: '',
+    tagline: 'Frame set. Walls next.',
     description:
-      'VORTEX pulls the viewer into a rotating storm of color noise and bloom. A short, cinematic concept piece about being pulled inward.',
-    tags: ['WebGL', 'Noise', 'Concept'],
-    theme: { accent: '#f472b6', accent2: '#e11d48' },
+      'Under construction — a placeholder while this entry takes shape. Copy, media and links land here as it builds.',
+    tags: ['TBD'],
+    theme: { accent: '#97a3b4', accent2: '#64748b', bg: '#10131a' },
   }),
   withImages({
-    id: 'orbit',
+    id: 'building-02',
     index: '05',
-    title: 'ORBIT',
-    category: 'Data / Tool',
-    tagline: 'Satellites of information.',
+    title: 'Building 05',
+    category: 'Building',
+    type: 'concept',
+    status: 'Under construction',
+    url: '',
+    tagline: 'Slab down. Walls rising.',
     description:
-      'ORBIT visualizes dense data as circling bodies — every signal an orbit, every reading a glow. A calm, precise instrument for exploring numbers.',
-    tags: ['D3', 'Data', 'Dashboard'],
-    theme: { accent: '#6ee7b7', accent2: '#059669' },
+      'Under construction — a placeholder while this entry takes shape. Copy, media and links land here as it builds.',
+    tags: ['TBD'],
+    theme: { accent: '#8f9bb0', accent2: '#5a6474', bg: '#0e1118' },
   }),
   withImages({
-    id: 'static',
+    id: 'building-03',
     index: '06',
-    title: 'STATIC',
-    category: 'Experiments',
-    tagline: 'Signal between the noise.',
+    title: 'Building 06',
+    category: 'Building',
+    type: 'experimental',
+    status: 'Under construction',
+    url: '',
+    tagline: 'Site cleared. Digging in.',
     description:
-      'STATIC is a series of generative noise studies — pixel storms, tape wobble, and try-too-hard digital decay tuned to a cold electric blue.',
-    tags: ['Generative', 'Audio', 'CSS'],
-    theme: { accent: '#93c5fd', accent2: '#2563eb' },
+      'Under construction — a placeholder while this entry takes shape. Copy, media and links land here as it builds.',
+    tags: ['TBD'],
+    theme: { accent: '#9aa2b8', accent2: '#555d75', bg: '#0d0f16' },
   }),
 ]

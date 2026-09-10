@@ -3,14 +3,19 @@
 import { useCallback, useEffect, useRef } from 'react'
 import Lenis from 'lenis'
 import Cursor from './components/Cursor'
+import Nav, { type NavTarget } from './components/Nav'
 import Stage from './components/Stage'
+import About from './components/About'
+import Lab from './components/Lab'
+
+const OFFSET = -76
 
 export default function Home() {
   const lenisRef = useRef<Lenis | null>(null)
 
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 1.1,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     })
     lenisRef.current = lenis
@@ -22,21 +27,8 @@ export default function Home() {
     }
     rafId = requestAnimationFrame(raf)
 
-    const work = document.querySelector('.the-work')
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view')
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.2 }
-    )
-    if (work) observer.observe(work)
-
     return () => {
       cancelAnimationFrame(rafId)
-      observer.disconnect()
       lenis.destroy()
     }
   }, [])
@@ -52,32 +44,67 @@ export default function Home() {
     }
   }, [])
 
-  const scrollToWork = () => {
-    lenisRef.current?.scrollTo('#the-work')
-  }
+  const scrollToY = useCallback((y: number) => {
+    const lenis = lenisRef.current
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      window.scrollTo(0, y)
+      return
+    }
+    if (lenis) lenis.scrollTo(y, { duration: 0.8 })
+  }, [])
+
+  const scrollTo = useCallback((target: NavTarget) => {
+    const lenis = lenisRef.current
+    if (!lenis) return
+    if (target === 'top') {
+      lenis.scrollTo(0, { duration: 1.1 })
+      return
+    }
+    const id = { work: 'the-work', about: 'about', lab: 'lab' }[target]
+    lenis.scrollTo(`#${id}`, { offset: OFFSET, duration: 1.1 })
+  }, [])
 
   return (
     <>
-      <main className="hero">
-        <p className="hero-label">afraz-creates//</p>
-        <h1 className="hero-title">PROJECT HUB</h1>
+      <Nav onNavigate={scrollTo} />
 
-        <button
-          className="scroll-indicator"
-          onClick={scrollToWork}
-          aria-label="Scroll down to The Work"
-        >
-          <span className="scroll-indicator-text">Scroll Down</span>
-          <span className="scroll-indicator-track">
-            <span className="scroll-indicator-progress" />
-          </span>
-        </button>
+      <main className="hero">
+        <div className="hero-inner">
+          <p className="hero-kicker">Afraz — creative developer</p>
+          <h1 className="hero-title">
+            Project&nbsp;Hub<span className="hero-dot">.</span>
+          </h1>
+          <p className="hero-vein">Work / Archive / Interactive</p>
+          <p className="hero-sub">
+            The dedicated archive of interactive projects — web builds,
+            experiments, client work and unfinished concepts. Every entry is
+            built by hand and kept close to the machine.
+          </p>
+          <button className="hero-cue" onClick={() => scrollTo('work')}>
+            <span className="hero-cue-label">Enter the work</span>
+            <span className="hero-cue-line">
+              <span className="hero-cue-track" />
+            </span>
+          </button>
+        </div>
       </main>
 
-      <Stage lockScroll={lockScroll} />
+      <Stage lockScroll={lockScroll} scrollToY={scrollToY} />
 
-      <footer className="site-foot">
-        <p>afraz-creates//project-hub — archive 2026</p>
+      <About />
+
+      <Lab />
+
+      <footer id="site-foot" className="site-foot">
+        <div className="site-foot-inner">
+          <p className="site-foot-name">&copy; 2026 — Afraz / Project-Hub</p>
+          <nav className="site-foot-nav" aria-label="Footer">
+            <button onClick={() => scrollTo('work')}>Work</button>
+            <button onClick={() => scrollTo('about')}>About</button>
+            <button onClick={() => scrollTo('lab')}>Lab</button>
+          </nav>
+          <p className="site-foot-note">A working archive — built by hand.</p>
+        </div>
       </footer>
 
       <Cursor />

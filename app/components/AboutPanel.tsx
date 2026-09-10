@@ -23,7 +23,7 @@ export default function AboutPanel({ project }: Props) {
         setTyped(project.description.slice(0, i))
         if (i >= project.description.length && interval) clearInterval(interval)
       }, 12)
-    }, 550)
+    }, 450)
 
     return () => {
       clearTimeout(timer)
@@ -38,19 +38,38 @@ export default function AboutPanel({ project }: Props) {
       <div className="about-meta">
         <span className="about-index">{project.index}</span>
         <span className="about-category">{project.category}</span>
+        <span className="about-status">{project.status}</span>
       </div>
+
       <h3 className="about-title">{project.title}</h3>
+
       <p className="about-desc">
         {typed || '\u00A0'}
         {!done && <span className="about-caret" aria-hidden="true" />}
       </p>
-      <ul className="about-tags">
-        {project.tags.map((t) => (
-          <li key={t} className="about-tag">
-            {t}
-          </li>
-        ))}
-      </ul>
+
+      <div className="about-tech">
+        <span className="about-tech-label">Tech</span>
+        <ul className="about-tags">
+          {project.tags.map((t) => (
+            <li key={t} className="about-tag">
+              {t}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="about-actions">
+        {project.url ? (
+          <a className="btn btn--primary" href={project.url}>
+            Open project <span aria-hidden="true">↗</span>
+          </a>
+        ) : (
+          <span className="btn btn--muted" aria-disabled="true">
+            Open project <span className="about-pending">— link pending</span>
+          </span>
+        )}
+      </div>
     </div>
   )
 }
