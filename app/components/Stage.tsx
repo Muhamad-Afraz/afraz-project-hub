@@ -274,19 +274,27 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
   useEffect(() => {
     const root = document.documentElement
     if (activeProject) {
+      const isPortfolio = activeProject.id === 'portfolio'
       const { accent, accent2, bg } = activeProject.theme
       root.style.setProperty('--accent', accent)
       root.style.setProperty('--accent-strong', accent2)
       root.style.setProperty('--accent-soft', hexToRgba(accent, 0.6))
       root.style.setProperty('--glow', hexToRgba(accent, 0.3))
       root.style.setProperty('--card-border', hexToRgba(accent, 0.22))
-      root.style.setProperty('--card-bg', hexToRgba(accent, 0.05))
-      root.style.setProperty('--card-bg-hover', hexToRgba(accent, 0.1))
-      root.style.setProperty('--veil', bg)
+      root.style.setProperty(
+        '--card-bg',
+        isPortfolio ? '#0e1c12' : `color-mix(in srgb, ${accent} 8%, #060607)`
+      )
+      root.style.setProperty(
+        '--card-bg-hover',
+        isPortfolio ? '#12251a' : `color-mix(in srgb, ${accent} 13%, #060607)`
+      )
+      root.style.setProperty('--veil', isPortfolio ? '#0a2a11' : bg)
     } else {
       THEME_KEYS.forEach((k) => root.style.removeProperty(k))
     }
     document.body.dataset.stage = pinnedId ? 'pinned' : active ? 'active' : ''
+    document.body.dataset.hover = activeProject?.id ?? ''
   }, [activeProject, active, pinnedId])
 
   useEffect(() => {

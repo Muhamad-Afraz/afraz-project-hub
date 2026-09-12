@@ -64,11 +64,16 @@ const ph = (accent: string, accent2: string, label: string, shape: number): stri
 
 type ProjectInput = Omit<Project, 'images'>
 
-const withImages = (input: ProjectInput): Project => ({
+const image = (folder: string, name: string) => `/${folder}/${encodeURIComponent(name)}`
+
+const withImages = (input: ProjectInput, imageOverrides: string[] = []): Project => ({
   ...input,
-  images: Array.from({ length: 7 }, (_, i) =>
-    ph(input.theme.accent, input.theme.accent2, `${input.index}-${i + 1}`, i)
-  ),
+  images:
+    imageOverrides.length > 0
+      ? imageOverrides
+      : Array.from({ length: 7 }, (_, i) =>
+          ph(input.theme.accent, input.theme.accent2, `${input.index}-${i + 1}`, i)
+        ),
 })
 
 export const projects: Project[] = [
@@ -85,7 +90,13 @@ export const projects: Project[] = [
       'My personal portfolio about me, my creations and my skills — designed to showcase what I do and how I think as a developer.',
     tags: ['React', 'Next.js', 'Interaction'],
     theme: { accent: '#b6ff2e', accent2: '#5ca416', bg: '#0c1009' },
-  }),
+  },
+    [
+      image('Portfolio.image', 'Hero section.png'),
+      image('Portfolio.image', 'Cool feature 1.png'),
+      image('Portfolio.image', 'Cool feature 2.png'),
+    ]
+  ),
   withImages({
     id: 'coffee-house',
     index: '02',
@@ -98,8 +109,14 @@ export const projects: Project[] = [
     description:
       'A modern coffee shop website designed with a clean interface, smooth interactions, and a warm, inviting experience.',
     tags: ['Design', 'Type', 'Web'],
-    theme: { accent: '#ddc19c', accent2: '#8a5a33', bg: '#191009' },
-  }),
+    theme: { accent: '#ddc19c', accent2: '#8a5a33', bg: '#2a1508' },
+  },
+    [
+      image('Housecoffee.image', 'Hero section.png'),
+      image('Housecoffee.image', 'Cool feature 1.png'),
+      image('Housecoffee.image', 'Cool feature 2.png'),
+    ]
+  ),
   withImages({
     id: 'nexus-2027',
     index: '03',
@@ -112,8 +129,14 @@ export const projects: Project[] = [
     description:
       'A futuristic event platform featuring project showcases, speakers, schedules, venue exploration, and registration.',
     tags: ['Events', 'Design', 'Web'],
-    theme: { accent: '#a78bfa', accent2: '#38bdf8', bg: '#0a0e26' },
-  }),
+    theme: { accent: '#a78bfa', accent2: '#38bdf8', bg: '#15052b' },
+  },
+    [
+      image('Nexus.image', 'Hero section.png'),
+      image('Nexus.image', 'Cool feature 1.png'),
+      image('Nexus.image', 'Cool feature 2.png'),
+    ]
+  ),
   withImages({
     id: 'building-01',
     index: '04',

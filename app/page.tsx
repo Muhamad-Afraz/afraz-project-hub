@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import Lenis from 'lenis'
+import gsap from 'gsap'
 import Cursor from './components/Cursor'
 import Nav, { type NavTarget } from './components/Nav'
 import Stage from './components/Stage'
 import About from './components/About'
 import Lab from './components/Lab'
+import Orb from './components/Orb'
 
 const OFFSET = -76
 
@@ -64,28 +66,72 @@ export default function Home() {
     lenis.scrollTo(`#${id}`, { offset: OFFSET, duration: 1.1 })
   }, [])
 
+  useEffect(() => {
+    const select = (sel: string) => document.querySelector<HTMLElement>(sel)
+    const kicker = select('.hero-kicker')
+    const title = select('.hero-title-inner')
+    const vein = select('.hero-vein')
+    const sub = select('.hero-sub')
+    const cue = select('.hero-cue')
+    const items = [kicker, vein, sub, cue].filter(Boolean) as HTMLElement[]
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return
+    }
+
+    gsap.set(kicker as HTMLElement, { autoAlpha: 0, y: 16 })
+    gsap.set(title as HTMLElement, { yPercent: 110 })
+    gsap.set(items, { autoAlpha: 0, y: 18 })
+
+    const onReveal = () => {
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+      tl.to(kicker as HTMLElement, { autoAlpha: 1, y: 0, duration: 0.5 }, 0.05)
+      tl.to(
+        title as HTMLElement,
+        { yPercent: 0, duration: 0.9, ease: 'power4.out' },
+        0.15
+      )
+      tl.to(items, { autoAlpha: 1, y: 0, duration: 0.65, stagger: 0.09 }, 0.55)
+    }
+
+    if (document.body.classList.contains('intro-done')) {
+      onReveal()
+      return
+    }
+    window.addEventListener('hub:intro-reveal', onReveal)
+    return () => window.removeEventListener('hub:intro-reveal', onReveal)
+  }, [])
+
   return (
     <>
       <Nav onNavigate={scrollTo} />
 
       <main className="hero">
         <div className="hero-inner">
-          <p className="hero-kicker">Afraz — creative developer</p>
-          <h1 className="hero-title">
-            Project&nbsp;Hub<span className="hero-dot">.</span>
-          </h1>
-          <p className="hero-vein">Work / Archive / Interactive</p>
-          <p className="hero-sub">
-            The dedicated archive of interactive projects — web builds,
-            experiments, client work and unfinished concepts. Every entry is
-            built by hand and kept close to the machine.
-          </p>
-          <button className="hero-cue" onClick={() => scrollTo('work')}>
-            <span className="hero-cue-label">Enter the work</span>
-            <span className="hero-cue-line">
-              <span className="hero-cue-track" />
-            </span>
-          </button>
+          <div className="hero-copy">
+            <p className="hero-kicker">Afraz — creative developer</p>
+            <h1 className="hero-title">
+              <span className="hero-title-mask">
+                <span className="hero-title-inner">
+                  Project&nbsp;Hub<span className="hero-dot">.</span>
+                </span>
+              </span>
+            </h1>
+            <p className="hero-vein">Work / Archive / Interactive</p>
+            <p className="hero-sub">
+              The dedicated archive of interactive projects — web builds,
+              experiments, client work and unfinished concepts. Every entry is
+              built by hand and kept close to the machine.
+            </p>
+            <button className="hero-cue" onClick={() => scrollTo('work')}>
+              <span className="hero-cue-label">Enter the work</span>
+              <span className="hero-cue-line">
+                <span className="hero-cue-track" />
+              </span>
+            </button>
+          </div>
+
+          <Orb />
         </div>
       </main>
 

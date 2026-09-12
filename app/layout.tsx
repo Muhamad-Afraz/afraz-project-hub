@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import Intro from './components/Intro'
 
 export const metadata: Metadata = {
   title: 'Afraz',
@@ -24,7 +25,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Intro />
+      </body>
     </html>
   )
 }

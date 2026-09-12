@@ -77,10 +77,10 @@ export default function ProjectCard({
       }}
     >
       <div className="card-visual">
-        <img className="card-img" src={project.images[5]} alt={`${project.title} preview`} draggable={false} />
+        <img className="card-img" src={project.images[0]} alt={`${project.title} preview`} draggable={false} />
         <img
           className="card-img card-img--layer"
-          src={project.images[2]}
+          src={project.images[1] ?? project.images[0]}
           alt=""
           draggable={false}
         />

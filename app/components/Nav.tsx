@@ -15,7 +15,7 @@ const LINKS: { target: NavTarget; id: SectionId; label: string }[] = [
 type Props = { onNavigate: (target: NavTarget) => void }
 
 export default function Nav({ onNavigate }: Props) {
-  const [active, setActive] = useState<SectionId>('the-work')
+  const [active, setActive] = useState<SectionId | null>(null)
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -37,6 +37,7 @@ export default function Nav({ onNavigate }: Props) {
           }
         })
         if (best) setActive(best)
+        else setActive(null)
       },
       { threshold: 0 }
     )
