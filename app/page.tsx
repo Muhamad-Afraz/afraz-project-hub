@@ -7,7 +7,6 @@ import Cursor from './components/Cursor'
 import Nav, { type NavTarget } from './components/Nav'
 import Stage from './components/Stage'
 import About from './components/About'
-import Lab from './components/Lab'
 import Orb from './components/Orb'
 
 const OFFSET = -76
@@ -62,7 +61,7 @@ export default function Home() {
       lenis.scrollTo(0, { duration: 1.1 })
       return
     }
-    const id = { work: 'the-work', about: 'about', lab: 'lab' }[target]
+    const id = { work: 'the-work', about: 'about' }[target]
     lenis.scrollTo(`#${id}`, { offset: OFFSET, duration: 1.1 })
   }, [])
 
@@ -139,15 +138,12 @@ export default function Home() {
 
       <About />
 
-      <Lab />
-
       <footer id="site-foot" className="site-foot">
         <div className="site-foot-inner">
           <p className="site-foot-name">&copy; 2026 — Afraz / Project-Hub</p>
           <nav className="site-foot-nav" aria-label="Footer">
             <button onClick={() => scrollTo('work')}>Work</button>
             <button onClick={() => scrollTo('about')}>About</button>
-            <button onClick={() => scrollTo('lab')}>Lab</button>
           </nav>
           <p className="site-foot-note">A working archive — built by hand.</p>
         </div>

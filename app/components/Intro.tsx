@@ -26,10 +26,16 @@ export default function Intro() {
       return
     }
 
+    const veil = el.querySelector('.intro-veil')
     const kicker = el.querySelector('.intro-kicker')
     const lineA = el.querySelector<HTMLElement>('.intro-line--a')
     const lineB = el.querySelector<HTMLElement>('.intro-line--b')
-    const veil = el.querySelector('.intro-veil')
+    const innerA = el.querySelector<HTMLElement>(
+      '.intro-line--a .intro-line-inner'
+    )
+    const innerB = el.querySelector<HTMLElement>(
+      '.intro-line--b .intro-line-inner'
+    )
 
     const tl = gsap.timeline({
       onComplete: () => {
@@ -38,32 +44,72 @@ export default function Intro() {
       },
     })
 
-    tl.set(el, { autoAlpha: 1 })
-      .to(kicker, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 0.1)
+    tl.set(el, { visibility: 'visible' }, 0)
       .fromTo(
-        lineA,
-        { yPercent: 110 },
-        { yPercent: 0, duration: 0.8, ease: 'power4.out' },
-        0.25
+        el,
+        { clipPath: 'inset(0 0 100% 0)' },
+        { clipPath: 'inset(0 0 0% 0)', duration: 1.2, ease: 'power4.inOut' },
+        0
       )
       .fromTo(
-        lineB,
-        { yPercent: 110 },
-        { yPercent: 0, duration: 0.8, ease: 'power4.out' },
-        0.4
+        veil,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.9, ease: 'power2.out' },
+        0.2
+      )
+      .fromTo(
+        kicker,
+        { opacity: 0, y: 16, filter: 'blur(8px)' },
+        {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.65,
+          ease: 'power3.out',
+        },
+        0.6
+      )
+      .fromTo(
+        innerA,
+        { yPercent: 112 },
+        { yPercent: 0, duration: 0.85, ease: 'power4.out' },
+        0.75
+      )
+      .fromTo(
+        innerB,
+        { yPercent: 112 },
+        { yPercent: 0, duration: 0.85, ease: 'power4.out' },
+        0.9
+      )
+      .call(fireReveal, [], 1.8)
+      .to(
+        [innerA, innerB],
+        { yPercent: -116, duration: 0.7, ease: 'power4.in', stagger: 0.07 },
+        1.98
       )
       .to(
         [lineA, lineB],
-        { yPercent: -110, duration: 0.7, ease: 'power4.in' },
-        1.15
+        { y: -12, duration: 0.7, ease: 'power4.in', stagger: 0.07 },
+        1.98
       )
-      .call(fireReveal, [], 1.05)
       .to(
-        [kicker, veil],
-        { opacity: 0, duration: 0.4, ease: 'power2.out' },
-        1.15
+        kicker,
+        {
+          opacity: 0,
+          y: -14,
+          filter: 'blur(6px)',
+          duration: 0.45,
+          ease: 'power2.in',
+        },
+        1.98
       )
-      .set(el, { autoAlpha: 0, pointerEvents: 'none' }, 1.8)
+      .to(veil, { opacity: 0, duration: 0.6, ease: 'power2.out' }, 2.05)
+      .to(
+        el,
+        { clipPath: 'inset(0 0 100% 0)', duration: 0.85, ease: 'power4.inOut' },
+        2.2
+      )
+      .set(el, { pointerEvents: 'none', visibility: 'hidden' }, 3.05)
   }, [])
 
   if (gone) return null
@@ -74,9 +120,11 @@ export default function Intro() {
       <div className="intro-center">
         <p className="intro-kicker">PROJECT HUB / INTERACTIVE ARCHIVE</p>
         <h2 className="intro-title">
-          <span className="intro-line intro-line--a">AFRAZ</span>
+          <span className="intro-line intro-line--a">
+            <span className="intro-line-inner">AFRAZ</span>
+          </span>
           <span className="intro-line intro-line--b">
-            Creative Playground
+            <span className="intro-line-inner">Creative Playground</span>
           </span>
         </h2>
       </div>

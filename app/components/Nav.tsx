@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from 'react'
 
-export type NavTarget = 'top' | 'work' | 'about' | 'lab'
+export type NavTarget = 'top' | 'work' | 'about'
 
-type SectionId = 'the-work' | 'about' | 'lab'
+type SectionId = 'the-work' | 'about'
 
 const LINKS: { target: NavTarget; id: SectionId; label: string }[] = [
   { target: 'work', id: 'the-work', label: 'Work' },
   { target: 'about', id: 'about', label: 'About' },
-  { target: 'lab', id: 'lab', label: 'Lab' },
 ]
 
 type Props = { onNavigate: (target: NavTarget) => void }
