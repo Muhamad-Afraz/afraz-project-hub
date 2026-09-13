@@ -20,6 +20,7 @@ export default function Home() {
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     })
     lenisRef.current = lenis
+    ;(window as unknown as { __lenis?: Lenis }).__lenis = lenis
 
     let rafId = 0
     const raf = (time: number) => {
@@ -31,6 +32,9 @@ export default function Home() {
     return () => {
       cancelAnimationFrame(rafId)
       lenis.destroy()
+      if ((window as unknown as { __lenis?: Lenis }).__lenis === lenis) {
+        delete (window as unknown as { __lenis?: Lenis }).__lenis
+      }
     }
   }, [])
 

@@ -1,7 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+
+type LenisHandle = { stop: () => void; start: () => void }
+
+const SCROLL_KEYS = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', ' ', 'Home', 'End']
 
 export default function Intro() {
   const [gone, setGone] = useState(false)
@@ -11,11 +15,44 @@ export default function Intro() {
     window.dispatchEvent(new CustomEvent('hub:intro-reveal'))
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
 
+    const win = window as unknown as { __lenis?: LenisHandle }
+
+    const lockScroll = () => {
+      document.body.dataset.scrollLock = 'true'
+      win.__lenis?.stop()
+    }
+
+    const unlockScroll = () => {
+      delete document.body.dataset.scrollLock
+      win.__lenis?.start()
+    }
+
+    const onBlock = (e: Event) => {
+      e.preventDefault()
+    }
+
+    const onKeyBlock = (e: KeyboardEvent) => {
+      if (SCROLL_KEYS.includes(e.key)) e.preventDefault()
+    }
+
+    lockScroll()
+    window.addEventListener('wheel', onBlock, { capture: true, passive: false })
+    window.addEventListener('touchmove', onBlock, { capture: true, passive: false })
+    window.addEventListener('keydown', onKeyBlock, { capture: true })
+
+    const unlock = () => {
+      window.removeEventListener('wheel', onBlock, { capture: true } as EventListenerOptions)
+      window.removeEventListener('touchmove', onBlock, { capture: true } as EventListenerOptions)
+      window.removeEventListener('keydown', onKeyBlock, { capture: true })
+      unlockScroll()
+    }
+
     const done = () => {
+      unlock()
       document.body.classList.add('intro-done')
     }
 
@@ -44,53 +81,47 @@ export default function Intro() {
       },
     })
 
-    tl.set(el, { visibility: 'visible' }, 0)
-      .fromTo(
-        el,
-        { clipPath: 'inset(0 0 100% 0)' },
-        { clipPath: 'inset(0 0 0% 0)', duration: 1.2, ease: 'power4.inOut' },
-        0
-      )
+    tl.set(el, { clipPath: 'inset(0 0 0% 0)', visibility: 'visible' }, 0)
       .fromTo(
         veil,
         { opacity: 0 },
-        { opacity: 1, duration: 0.9, ease: 'power2.out' },
-        0.2
+        { opacity: 1, duration: 0.7, ease: 'power2.out' },
+        0.05
       )
       .fromTo(
         kicker,
-        { opacity: 0, y: 16, filter: 'blur(8px)' },
+        { opacity: 0, y: 14, filter: 'blur(8px)' },
         {
           opacity: 1,
           y: 0,
           filter: 'blur(0px)',
-          duration: 0.65,
+          duration: 0.55,
           ease: 'power3.out',
         },
-        0.6
+        0.15
       )
       .fromTo(
         innerA,
-        { yPercent: 112 },
-        { yPercent: 0, duration: 0.85, ease: 'power4.out' },
-        0.75
+        { yPercent: 112, y: 0 },
+        { yPercent: 0, y: 0, duration: 0.7, ease: 'power4.out' },
+        0.3
       )
       .fromTo(
         innerB,
-        { yPercent: 112 },
-        { yPercent: 0, duration: 0.85, ease: 'power4.out' },
-        0.9
+        { yPercent: 112, y: 0 },
+        { yPercent: 0, y: 0, duration: 0.7, ease: 'power4.out' },
+        0.5
       )
-      .call(fireReveal, [], 1.8)
+      .call(fireReveal, [], 2.1)
       .to(
         [innerA, innerB],
-        { yPercent: -116, duration: 0.7, ease: 'power4.in', stagger: 0.07 },
-        1.98
+        { yPercent: -116, y: 0, duration: 0.7, ease: 'power4.in', stagger: 0.07 },
+        2.35
       )
       .to(
         [lineA, lineB],
         { y: -12, duration: 0.7, ease: 'power4.in', stagger: 0.07 },
-        1.98
+        2.35
       )
       .to(
         kicker,
@@ -101,15 +132,20 @@ export default function Intro() {
           duration: 0.45,
           ease: 'power2.in',
         },
-        1.98
+        2.35
       )
-      .to(veil, { opacity: 0, duration: 0.6, ease: 'power2.out' }, 2.05)
+      .to(veil, { opacity: 0, duration: 0.6, ease: 'power2.out' }, 2.45)
       .to(
         el,
         { clipPath: 'inset(0 0 100% 0)', duration: 0.85, ease: 'power4.inOut' },
-        2.2
+        2.6
       )
-      .set(el, { pointerEvents: 'none', visibility: 'hidden' }, 3.05)
+      .set(el, { pointerEvents: 'none', visibility: 'hidden' }, 3.45)
+
+    return () => {
+      tl.kill()
+      unlock()
+    }
   }, [])
 
   if (gone) return null
