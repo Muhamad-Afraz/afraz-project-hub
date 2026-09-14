@@ -24,10 +24,13 @@ export default function ProjectCard({
   onClick,
 }: Props) {
   const rootRef = useRef<HTMLElement>(null)
+  const coarse =
+    typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
 
   const handleMove = (e: React.PointerEvent<HTMLElement>) => {
     const el = rootRef.current
     if (!el || active) return
+    if (coarse) return
     if (!window.matchMedia('(pointer: fine)').matches) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const rect = el.getBoundingClientRect()
@@ -43,13 +46,19 @@ export default function ProjectCard({
   }
 
   const handleEnter = () => {
+    if (coarse) {
+      onEnter()
+      return
+    }
     const el = rootRef.current
     if (el && !active) gsap.to(el, { scale: 1.02, duration: 0.45, ease: 'power3.out' })
     onEnter()
   }
 
   const handleLeave = () => {
-    gsap.to(rootRef.current, { rotateX: 0, rotateY: 0, scale: 1, duration: 0.6, ease: 'power3.out' })
+    if (!coarse) {
+      gsap.to(rootRef.current, { rotateX: 0, rotateY: 0, scale: 1, duration: 0.6, ease: 'power3.out' })
+    }
     onLeave()
   }
 
@@ -62,6 +71,7 @@ export default function ProjectCard({
       data-col={col}
       data-cursor="VIEW"
       aria-label={`${project.title} — ${project.category}`}
+      aria-expanded={coarse && active ? true : undefined}
       className={`card card--col-${col}${active ? ' card--active' : ''}${
         leaving ? ' card--leaving' : ''
       }`}
@@ -77,12 +87,14 @@ export default function ProjectCard({
       }}
     >
       <div className="card-visual">
-        <img className="card-img" src={project.images[0]} alt={`${project.title} preview`} draggable={false} />
+        <img className="card-img" src={project.images[0]} alt={`${project.title} preview`} draggable={false} loading={coarse ? 'lazy' : undefined} decoding={coarse ? 'async' : undefined} />
         <img
           className="card-img card-img--layer"
           src={project.images[1] ?? project.images[0]}
           alt=""
           draggable={false}
+          loading={coarse ? 'lazy' : undefined}
+          decoding={coarse ? 'async' : undefined}
         />
         <span className="card-glow" />
         <span className="card-index">{project.index}</span>

@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -45,6 +46,7 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
   const [enterTick, setEnterTick] = useState(0)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [pinnedId, setPinnedId] = useState<string | null>(null)
+  const [closingId, setClosingId] = useState<string | null>(null)
 
   const gridRef = useRef<HTMLDivElement>(null)
   const gridHeightRef = useRef(0)
@@ -53,8 +55,10 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
   const pinTimerRef = useRef<number | null>(null)
   const settleRef = useRef<number | null>(null)
   const pointerRef = useRef({ x: -1, y: -1 })
+  const coarseRef = useRef(false)
+  const closeTimerRef = useRef<number | null>(null)
 
-  const active = pinnedId ?? hoveredId
+  const active = pinnedId ?? hoveredId ?? closingId
   const activeProject = useMemo(
     () => projects.find((p) => p.id === active) ?? null,
     [active]
@@ -120,6 +124,16 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
             ? null
             : prev
         )
+        setHoveredId((prev) =>
+          prev && !(f === 'all' || projects.find((p) => p.id === prev)?.type === f)
+            ? null
+            : prev
+        )
+        if (closeTimerRef.current) {
+          window.clearTimeout(closeTimerRef.current)
+          closeTimerRef.current = null
+        }
+        setClosingId(null)
       }, 300)
     },
     [filter, matches, clearSettle]
@@ -140,6 +154,7 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
 
   const handleEnter = useCallback(
     (id: string) => {
+      if (coarseRef.current) return
       setHoveredId(id)
       if (pinnedId) return
       if (!window.matchMedia('(pointer: fine)').matches) return
@@ -179,11 +194,10 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
     [pinnedId, ensureVisible, clearSettle]
   )
 
-  const handleLeave = useCallback(
-    (id: string) =>
-      setHoveredId((prev) => (prev === id && holdRef.current !== id ? null : prev)),
-    []
-  )
+  const handleLeave = useCallback((id: string) => {
+    if (coarseRef.current) return
+    setHoveredId((prev) => (prev === id && holdRef.current !== id ? null : prev))
+  }, [])
 
   const unpin = useCallback(() => {
     holdRef.current = null
@@ -196,8 +210,39 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
     setHoveredId(null)
   }, [clearSettle])
 
+  // Mobile: hand a card to `closingId` so its preview keeps animating (fade +
+  // shrink) while the next card expands — cross-fade instead of a jump.
+  const startCollapse = useCallback((id: string) => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current)
+    setClosingId(id)
+    closeTimerRef.current = window.setTimeout(() => {
+      closeTimerRef.current = null
+      setClosingId(null)
+    }, 640)
+  }, [])
+
+  const dismissPreview = useCallback(() => {
+    if (!hoveredId) return
+    const id = hoveredId
+    setHoveredId(null)
+    startCollapse(id)
+  }, [hoveredId, startCollapse])
+
   const handleClick = useCallback(
     (id: string) => {
+      if (coarseRef.current) {
+        // Tap the open card again: close its preview with a smooth collapse.
+        if (hoveredId === id) {
+          dismissPreview()
+          return
+        }
+        // Switching cards: the open preview fades/collapses out while the
+        // tapped one expands in, so the layout glides instead of jumping.
+        setClosingId((prev) => (prev === id ? null : prev))
+        if (hoveredId) startCollapse(hoveredId)
+        setHoveredId(id)
+        return
+      }
       if (pinnedId === id) {
         unpin()
         return
@@ -240,12 +285,14 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
         }, 850)
       })
     },
-    [pinnedId, scrollToY, unpin]
+    [pinnedId, scrollToY, unpin, hoveredId, dismissPreview, startCollapse]
   )
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') unpin()
+      if (e.key !== 'Escape') return
+      if (coarseRef.current && hoveredId) dismissPreview()
+      else unpin()
     }
     const onMove = (e: MouseEvent) => {
       pointerRef.current = { x: e.clientX, y: e.clientY }
@@ -269,7 +316,17 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('mousemove', onMove)
     }
-  }, [unpin])
+  }, [unpin, hoveredId, dismissPreview])
+
+  useEffect(() => {
+    const m = window.matchMedia('(pointer: coarse)')
+    coarseRef.current = m.matches
+    const onChange = (e: MediaQueryListEvent) => {
+      coarseRef.current = e.matches
+    }
+    m.addEventListener('change', onChange)
+    return () => m.removeEventListener('change', onChange)
+  }, [])
 
   useEffect(() => {
     const root = document.documentElement
@@ -305,6 +362,7 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
     () => () => {
       if (pinTimerRef.current) window.clearTimeout(pinTimerRef.current)
       if (settleRef.current) window.clearTimeout(settleRef.current)
+      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current)
     },
     []
   )
@@ -390,19 +448,23 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
 
       <div ref={gridRef} className={`stage-grid${active ? ' is-focused' : ''}`}>
         {shown.map((p, i) => (
-          <ProjectCard
-            key={p.id}
-            project={p}
-            col={i % 3}
-            active={active === p.id}
-            leaving={exiting.includes(p.id)}
-            onEnter={() => handleEnter(p.id)}
-            onLeave={() => handleLeave(p.id)}
-            onClick={() => handleClick(p.id)}
-          />
+          <Fragment key={p.id}>
+            <ProjectCard
+              project={p}
+              col={i % 3}
+              active={active === p.id}
+              leaving={exiting.includes(p.id)}
+              onEnter={() => handleEnter(p.id)}
+              onLeave={() => handleLeave(p.id)}
+              onClick={() => handleClick(p.id)}
+            />
+            {coarseRef.current && (active === p.id || closingId === p.id) && (
+              <MobilePreview project={p} closing={closingId === p.id} />
+            )}
+          </Fragment>
         ))}
 
-        {activeProject && activeRow >= 0 && layout && (
+        {!coarseRef.current && activeProject && activeRow >= 0 && layout && (
           <div className={`stage-panels${active ? ' is-active' : ''}`} aria-hidden="true">
             <div
               className="panel panel--about"
@@ -427,6 +489,36 @@ export default function Stage({ lockScroll, scrollToY }: Props) {
           </button>
         </div>
       )}
+
+      {coarseRef.current && hoveredId && (
+        <div className="stage-close">
+          <button className="stage-close-btn" onClick={dismissPreview}>
+            Close preview <span className="stage-close-x" aria-hidden="true">&#10005;</span>
+          </button>
+        </div>
+      )}
     </section>
+  )
+}
+
+function MobilePreview({ project, closing }: { project: Project; closing: boolean }) {
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setOpen(!closing))
+    return () => cancelAnimationFrame(id)
+  }, [closing])
+
+  return (
+    <div className={`stage-preview${open ? ' is-open' : ''}`} aria-hidden="true">
+      <div className="stage-preview-inner">
+        <div className="panel panel--about">
+          <AboutPanel project={project} />
+        </div>
+        <div className="panel panel--marquee">
+          <Marquee images={project.images} dir="right" />
+        </div>
+      </div>
+    </div>
   )
 }

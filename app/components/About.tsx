@@ -107,6 +107,22 @@ export default function About() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!window.matchMedia('(pointer: coarse)').matches) return
+    const ticker = sectionRef.current?.querySelector<HTMLElement>(
+      '.about-ticker-track'
+    )
+    if (!ticker) return
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        ticker.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused'
+      },
+      { rootMargin: '240px 0px' }
+    )
+    io.observe(ticker)
+    return () => io.disconnect()
+  }, [])
+
   return (
     <section id="about" ref={sectionRef} className="about-section">
       <div className="about-ticker" aria-hidden="true">

@@ -99,6 +99,9 @@ export default function Orb() {
   const readNameRef = useRef<HTMLSpanElement>(null)
   const hintRef = useRef<HTMLDivElement>(null)
 
+  const coarse =
+    typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+
   useEffect(() => {
     const box = boxRef.current
     const space = spaceRef.current
@@ -220,7 +223,7 @@ export default function Orb() {
 
     const hover = (e: PointerEvent, on: boolean) => {
       box.classList.toggle('is-hot', on)
-      if (!on) return
+      if (!on || coarse) return
       const r = box.getBoundingClientRect()
       const nx = (e.clientX - r.left) / r.width - 0.5
       const ny = (e.clientY - r.top) / r.height - 0.5
@@ -282,7 +285,12 @@ export default function Orb() {
         const inertia = Math.max(-16, Math.min(16, state.dx * 6))
         const target = Math.round((spin.deg + inertia) / 90) * 90
         spinTo(target, 1.1, 'power3.out')
+        return
       }
+      // No swipe: a scroll gesture (pointercancel) or a light nudge killed the
+      // idle spin on pointerdown. Always bring rotation back unless a spin-to
+      // tween is already running.
+      if (!tween) startIdle()
     }
 
     const onClick = () => {
@@ -338,9 +346,9 @@ export default function Orb() {
     )
   })
 
-  const stars: ReactNode[] = STARS.map((style, i) => (
-    <i key={i} className="orb-star" style={style as CSSProperties} />
-  ))
+  const stars: ReactNode[] = STARS.slice(0, coarse ? 12 : STAR_N).map(
+    (style, i) => <i key={i} className="orb-star" style={style as CSSProperties} />
+  )
 
   return (
     <div className="hero-orb">

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import Lenis from 'lenis'
 import gsap from 'gsap'
-import Cursor from './components/Cursor'
 import Nav, { type NavTarget } from './components/Nav'
 import Stage from './components/Stage'
 import About from './components/About'
@@ -152,8 +151,6 @@ export default function Home() {
           <p className="site-foot-note">A working archive — built by hand.</p>
         </div>
       </footer>
-
-      <Cursor />
     </>
   )
 }

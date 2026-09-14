@@ -20,6 +20,7 @@ export default function Intro() {
     if (!el) return
 
     const win = window as unknown as { __lenis?: LenisHandle }
+    const coarse = window.matchMedia('(pointer: coarse)').matches
 
     const lockScroll = () => {
       document.body.dataset.scrollLock = 'true'
@@ -56,8 +57,15 @@ export default function Intro() {
       document.body.classList.add('intro-done')
     }
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let revealed = false
+    const safeReveal = () => {
+      if (revealed) return
+      revealed = true
       fireReveal()
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      safeReveal()
       done()
       setGone(true)
       return
@@ -74,75 +82,142 @@ export default function Intro() {
       '.intro-line--b .intro-line-inner'
     )
 
+    let watchdog = 0
     const tl = gsap.timeline({
       onComplete: () => {
+        window.clearTimeout(watchdog)
         done()
         setGone(true)
       },
     })
 
-    tl.set(el, { clipPath: 'inset(0 0 0% 0)', visibility: 'visible' }, 0)
-      .fromTo(
-        veil,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.7, ease: 'power2.out' },
-        0.05
-      )
-      .fromTo(
-        kicker,
-        { opacity: 0, y: 14, filter: 'blur(8px)' },
-        {
-          opacity: 1,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 0.55,
-          ease: 'power3.out',
-        },
-        0.15
-      )
-      .fromTo(
-        innerA,
-        { yPercent: 112, y: 0 },
-        { yPercent: 0, y: 0, duration: 0.7, ease: 'power4.out' },
-        0.3
-      )
-      .fromTo(
-        innerB,
-        { yPercent: 112, y: 0 },
-        { yPercent: 0, y: 0, duration: 0.7, ease: 'power4.out' },
-        0.5
-      )
-      .call(fireReveal, [], 2.1)
-      .to(
-        [innerA, innerB],
-        { yPercent: -116, y: 0, duration: 0.7, ease: 'power4.in', stagger: 0.07 },
-        2.35
-      )
-      .to(
-        [lineA, lineB],
-        { y: -12, duration: 0.7, ease: 'power4.in', stagger: 0.07 },
-        2.35
-      )
-      .to(
-        kicker,
-        {
-          opacity: 0,
-          y: -14,
-          filter: 'blur(6px)',
-          duration: 0.45,
-          ease: 'power2.in',
-        },
-        2.35
-      )
-      .to(veil, { opacity: 0, duration: 0.6, ease: 'power2.out' }, 2.45)
-      .to(
-        el,
-        { clipPath: 'inset(0 0 100% 0)', duration: 0.85, ease: 'power4.inOut' },
-        2.6
-      )
-      .set(el, { pointerEvents: 'none', visibility: 'hidden' }, 3.45)
+    // Failsafe — never let the intro hang (throttled rAF, iOS compositor
+    // hiccups, mid-fling scroll, etc.). Force-complete after 4.5s.
+    watchdog = window.setTimeout(() => {
+      tl.kill()
+      safeReveal()
+      done()
+      setGone(true)
+    }, 4500)
+
+    if (coarse) {
+      // Touch/devices: clip-path wipes and blur() tweens are repaint magnets
+      // and are the #1 cause of frozen/ghost overlays on phone GPUs. Use a
+      // plain opacity fade for the exit instead.
+      tl.set(el, { visibility: 'visible' }, 0)
+        .fromTo(
+          veil,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.7, ease: 'power2.out' },
+          0.05
+        )
+        .fromTo(
+          kicker,
+          { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' },
+          0.15
+        )
+        .fromTo(
+          innerA,
+          { yPercent: 112, y: 0 },
+          { yPercent: 0, y: 0, duration: 0.7, ease: 'power4.out' },
+          0.3
+        )
+        .fromTo(
+          innerB,
+          { yPercent: 112, y: 0 },
+          { yPercent: 0, y: 0, duration: 0.7, ease: 'power4.out' },
+          0.5
+        )
+        .call(safeReveal, [], 2.1)
+        .to(
+          [innerA, innerB],
+          { yPercent: -116, y: 0, duration: 0.7, ease: 'power4.in', stagger: 0.07 },
+          2.35
+        )
+        .to(
+          [lineA, lineB],
+          { y: -12, duration: 0.7, ease: 'power4.in', stagger: 0.07 },
+          2.35
+        )
+        .to(
+          kicker,
+          {
+            opacity: 0,
+            y: -14,
+            duration: 0.4,
+            ease: 'power2.in',
+          },
+          2.35
+        )
+        .to(veil, { opacity: 0, duration: 0.5, ease: 'power2.out' }, 2.45)
+        .to(el, { opacity: 0, duration: 0.5, ease: 'power2.inOut' }, 2.7)
+        .set(el, { pointerEvents: 'none', visibility: 'hidden' }, 3.2)
+    } else {
+      tl.set(el, { clipPath: 'inset(0 0 0% 0)', visibility: 'visible' }, 0)
+        .fromTo(
+          veil,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.7, ease: 'power2.out' },
+          0.05
+        )
+        .fromTo(
+          kicker,
+          { opacity: 0, y: 14, filter: 'blur(8px)' },
+          {
+            opacity: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 0.55,
+            ease: 'power3.out',
+          },
+          0.15
+        )
+        .fromTo(
+          innerA,
+          { yPercent: 112, y: 0 },
+          { yPercent: 0, y: 0, duration: 0.7, ease: 'power4.out' },
+          0.3
+        )
+        .fromTo(
+          innerB,
+          { yPercent: 112, y: 0 },
+          { yPercent: 0, y: 0, duration: 0.7, ease: 'power4.out' },
+          0.5
+        )
+        .call(safeReveal, [], 2.1)
+        .to(
+          [innerA, innerB],
+          { yPercent: -116, y: 0, duration: 0.7, ease: 'power4.in', stagger: 0.07 },
+          2.35
+        )
+        .to(
+          [lineA, lineB],
+          { y: -12, duration: 0.7, ease: 'power4.in', stagger: 0.07 },
+          2.35
+        )
+        .to(
+          kicker,
+          {
+            opacity: 0,
+            y: -14,
+            filter: 'blur(6px)',
+            duration: 0.45,
+            ease: 'power2.in',
+          },
+          2.35
+        )
+        .to(veil, { opacity: 0, duration: 0.6, ease: 'power2.out' }, 2.45)
+        .to(
+          el,
+          { clipPath: 'inset(0 0 100% 0)', duration: 0.85, ease: 'power4.inOut' },
+          2.6
+        )
+        .set(el, { pointerEvents: 'none', visibility: 'hidden' }, 3.45)
+    }
 
     return () => {
+      window.clearTimeout(watchdog)
       tl.kill()
       unlock()
     }

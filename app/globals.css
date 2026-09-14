@@ -7,6 +7,7 @@
 }
 
 html {
+  overflow-x: hidden;
   overflow-x: clip;
   scroll-behavior: auto;
 }
@@ -285,6 +286,7 @@ body[data-hover='portfolio'] .panel--about {
 .hero {
   position: relative;
   z-index: 2;
+  min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   align-items: flex-start;
@@ -989,6 +991,7 @@ a {
 .the-work {
   position: relative;
   z-index: 2;
+  min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -1179,6 +1182,13 @@ a {
   border: 1px solid var(--line);
   border-radius: 4px;
   padding: 0.12rem 0.35rem;
+}
+
+.stage-close-x {
+  color: var(--accent);
+  font-size: 0.85rem;
+  line-height: 1;
+  font-weight: 600;
 }
 
 .card-visual {
@@ -1683,7 +1693,7 @@ a {
 /* Cursor-tracked glow */
 .about-glow {
   position: absolute;
-  top: 34%;
+  top: 0;
   left: 0;
   width: 480px;
   height: 480px;
@@ -2177,65 +2187,6 @@ a {
   transform: none;
 }
 
-/* Cursor */
-.has-cursor,
-.has-cursor * {
-  cursor: none !important;
-}
-
-.cursor {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  pointer-events: none;
-}
-
-.cursor-dot {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 6px;
-  height: 6px;
-  margin: -3px 0 0 -3px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-.cursor-ring {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 34px;
-  height: 34px;
-  margin: -17px 0 0 -17px;
-  border-radius: 50%;
-  border: 1px solid var(--accent-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease,
-    border-color 0.3s ease, background 0.3s ease;
-}
-
-.cursor-ring--hot {
-  width: 76px;
-  height: 76px;
-  margin: -38px 0 0 -38px;
-  border-color: transparent;
-  background: var(--glow);
-}
-
-.cursor-label {
-  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas,
-    monospace;
-  font-size: 0.52rem;
-  letter-spacing: 0.18em;
-  color: var(--accent);
-  text-transform: uppercase;
-  white-space: nowrap;
-  user-select: none;
-}
-
 /* Footer */
 .site-foot {
   position: relative;
@@ -2473,6 +2424,247 @@ body[data-scroll-lock] {
   }
 }
 
+/* Phones: single-column work grid, scrollable filter row, roomier previews */
+@media (max-width: 600px) {
+  .stage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 0;
+  }
+
+  .card-visual {
+    flex: 0 0 230px;
+  }
+
+  .work-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.45rem;
+    margin-right: calc(var(--gutter) * -1);
+    padding-right: var(--gutter);
+    padding-bottom: 0.3rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .work-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-chip {
+    flex: 0 0 auto;
+    padding: 0.62rem 1.05rem;
+    touch-action: manipulation;
+  }
+
+  .orb {
+    --orb-h: clamp(230px, 58vw, 300px);
+  }
+
+  .about-heading {
+    font-size: clamp(2rem, 11vw, 3rem);
+  }
+
+  .about-total-num {
+    font-size: clamp(3.6rem, 24vw, 5rem);
+  }
+
+  .about-fact {
+    grid-template-columns: 8px 1fr;
+  }
+
+  .about-fact dd {
+    grid-column: 2;
+    text-align: left;
+    justify-self: start;
+  }
+}
+
+/* Touch devices: strip expensive layers, kill tap latency, add tactile feedback */
+@media (pointer: coarse) {
+  .about-terminal,
+  .panel--about,
+  .stage-close-btn,
+  .card-index,
+  .nav-inner {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .about-glow {
+    display: none;
+  }
+
+  /* Orb: freeze the decorative layers on touch — the JS-driven carousel
+     rotation keeps running smoothly. */
+  .orb-ring--1,
+  .orb-ring--2,
+  .orb-div,
+  .orb-iris,
+  .orb-sweep,
+  .orb-core {
+    animation: none;
+  }
+
+  .orb-sweep {
+    opacity: 0;
+  }
+
+  .orb-star {
+    animation: none;
+  }
+
+  .orb-light,
+  .orb-face-sheen {
+    opacity: 0 !important;
+  }
+
+  .orb-bloom {
+    opacity: 0.6;
+  }
+
+  /* No double-tap zoom / tap latency on interactive elements */
+  .card,
+  .filter-chip,
+  .nav-link,
+  .stage-close-btn,
+  .hero-cue,
+  .about-tool,
+  .site-foot-nav button,
+  .nav-brand {
+    touch-action: manipulation;
+  }
+
+  /* Touch activation feedback (hover has no meaning on touch) */
+  .about-tool:active {
+    color: #060607;
+    background: var(--about-accent);
+    border-color: var(--about-accent);
+    box-shadow: 0 0 20px var(--about-accent-soft);
+  }
+
+  .filter-chip:active {
+    color: #fff;
+    border-color: var(--accent-soft);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+
+  /* Keep every card fully readable when a preview is open on touch — the
+     desktop hover/pin dimming would otherwise bury the other cards while
+     scrolling through the archive. Only the opened card is emphasized. */
+  .stage-grid.is-focused .card:not(.card--active) {
+    filter: none;
+    transform: none;
+  }
+
+  .about-fact:active::before {
+    transform: scaleY(1);
+  }
+
+  .about-fact:active .about-fact-mark {
+    background: var(--about-accent);
+    border-color: var(--about-accent);
+    box-shadow: 0 0 12px var(--about-accent-soft);
+  }
+
+  .about-fact:active dd {
+    color: var(--about-accent);
+    transform: translateX(-4px);
+  }
+
+  /* Snappier about reveal so the section feels smooth, not laggy */
+  .about-section.in-view .about-line-inner {
+    transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .about-section.in-view .about-rule,
+  .about-section.in-view .about-total,
+  .about-section.in-view .about-terminal,
+  .about-section.in-view .about-copy,
+  .about-section.in-view .about-facts {
+    transition: opacity 0.7s ease,
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .about-section.in-view .about-total {
+    transition-delay: 0.05s;
+  }
+
+  .about-section.in-view .about-terminal {
+    transition-delay: 0.1s;
+  }
+
+  .about-section.in-view .about-copy {
+    transition-delay: 0.12s;
+  }
+
+  .about-section.in-view .about-facts {
+    transition-delay: 0.15s;
+  }
+}
+
+/* Mobile tap-to-preview: smooth in-flow expand/collapse. The wrapper is its
+   own grid whose first (only) track animates 0fr -> 1fr, so the surrounding
+   cards sink out of the way instead of jumping. */
+.stage-preview {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease;
+}
+
+.stage-preview.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.stage-preview-inner {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.stage-preview .panel {
+  animation-name: preview-in;
+  animation-duration: 0.65s;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.stage-preview .panel--about {
+  max-height: none;
+}
+
+.stage-preview .panel--marquee {
+  --slot-h: clamp(200px, 36vh, 340px);
+  height: var(--slot-h);
+}
+
+.stage-preview .panel--about {
+  animation-delay: 0.08s;
+}
+
+.stage-preview .panel--marquee {
+  animation-delay: 0.16s;
+}
+
+@keyframes preview-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-cue-track {
     animation: none;
@@ -2523,6 +2715,16 @@ body[data-scroll-lock] {
     transform: none;
   }
 
+  .stage-preview {
+    transition: none;
+  }
+
+  .stage-preview .panel {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
   .card,
   .card-img,
   .card-img--layer,
@@ -2553,15 +2755,6 @@ body[data-scroll-lock] {
   .marquee-strip--a,
   .marquee-strip--b {
     animation: none !important;
-  }
-
-  .cursor {
-    display: none;
-  }
-
-  .has-cursor,
-  .has-cursor * {
-    cursor: auto !important;
   }
 
   .about-section.in-view .about-rule,
